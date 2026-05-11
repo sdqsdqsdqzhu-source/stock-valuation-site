@@ -30,6 +30,7 @@ REDDIT_SUBREDDITS = [
     "pennystocks",
 ]
 REDDIT_TOKEN_CACHE = {"token": None, "expires_at": 0.0}
+REDDIT_CACHE_PATH = PUBLIC / "data" / "reddit_cache.json"
 
 
 CIK_BY_TICKER = {
@@ -2141,6 +2142,82 @@ def get_reddit_oauth_token() -> tuple[str | None, str | None]:
         return None, f"Reddit OAuth token {exc.__class__.__name__}"
 
 
+def build_reddit_attention_payload(posts: list[dict], source: str, successful_requests: int, errors: list[str], cache_meta: dict | None = None) -> dict:
+    total_comments = sum(round(safe_float(item.get("comments"))) for item in posts)
+    total_score = sum(max(round(safe_float(item.get("score"))), 0) for item in posts)
+    avg_upvote_ratio = sum(safe_float(item.get("upvote_ratio")) for item in posts) / len(posts) if posts else 0
+    active_subreddits = len({item.get("subreddit") for item in posts if item.get("subreddit")})
+    heat = clamp(
+        min(len(posts), 80) / 80 * 42
+        + min(math.log10(total_comments + 1), 4) / 4 * 24
+        + min(math.log10(total_score + 1), 4) / 4 * 20
+        + min(active_subreddits, 8) / 8 * 10
+        + avg_upvote_ratio * 4,
+        0,
+        100,
+    )
+    today = date.today()
+    daily = []
+    for days_ago in range(6, -1, -1):
+        day = today - timedelta(days=days_ago)
+        key = day.isoformat()
+        day_posts = [item for item in posts if item.get("created") == key]
+        daily.append({
+            "date": key,
+            "posts": len(day_posts),
+            "comments": sum(round(safe_float(item.get("comments"))) for item in day_posts),
+            "upvotes": sum(max(round(safe_float(item.get("score"))), 0) for item in day_posts),
+        })
+    top_posts = sorted(posts, key=lambda item: safe_float(item.get("score")) + safe_float(item.get("comments")) * 2, reverse=True)[:5]
+    payload = {
+        "connected": True,
+        "source": source,
+        "score": round(heat),
+        "posts": len(posts),
+        "comments": total_comments,
+        "upvotes": total_score,
+        "avg_upvote_ratio": avg_upvote_ratio,
+        "daily": daily,
+        "active_subreddits": active_subreddits,
+        "top_posts": top_posts,
+        "searched_subreddits": REDDIT_SUBREDDITS,
+        "errors": errors[:4],
+    }
+    if cache_meta:
+        payload.update(cache_meta)
+    return payload
+
+
+def load_reddit_cache(ticker: str) -> tuple[dict | None, str | None]:
+    try:
+        if not REDDIT_CACHE_PATH.exists():
+            return None, "Local Reddit cache file not found"
+        cache = json.loads(REDDIT_CACHE_PATH.read_text(encoding="utf-8"))
+        records = cache.get("records", {}) if isinstance(cache, dict) else {}
+        record = records.get(ticker.upper())
+        if not isinstance(record, dict):
+            return None, f"No local Reddit cache for {ticker.upper()}"
+        posts = record.get("posts") or []
+        if not isinstance(posts, list):
+            return None, f"Local Reddit cache for {ticker.upper()} is invalid"
+        cached_at = record.get("cached_at") or cache.get("updated_at")
+        cache_meta = {
+            "cached": True,
+            "cached_at": cached_at,
+            "cache_age_hours": None,
+        }
+        if cached_at:
+            try:
+                cached_dt = datetime.fromisoformat(str(cached_at).replace("Z", "+00:00"))
+                cache_meta["cache_age_hours"] = round((datetime.now(cached_dt.tzinfo) - cached_dt).total_seconds() / 3600, 1)
+            except Exception:
+                pass
+        source = f"Local Reddit cache / 本地Reddit缓存 ({cached_at or 'unknown time'})"
+        return build_reddit_attention_payload(posts, source, 0, record.get("errors") or [], cache_meta), None
+    except Exception as exc:
+        return None, f"Local Reddit cache read failed: {exc.__class__.__name__}"
+
+
 def fetch_reddit_attention(ticker: str) -> tuple[dict, list[str]]:
     pattern = re.compile(rf"(?<![A-Z0-9])\$?{re.escape(ticker.upper())}(?![A-Z0-9])")
     posts = []
@@ -2262,6 +2339,12 @@ def fetch_reddit_attention(ticker: str) -> tuple[dict, list[str]]:
             })
 
     if successful_requests == 0:
+        cached_payload, cache_error = load_reddit_cache(ticker)
+        if cached_payload:
+            cached_payload["live_error"] = "; ".join(errors[:5])
+            return cached_payload, [f"Reddit live search unavailable; using local cache for {ticker.upper()}."]
+        if cache_error:
+            errors.append(cache_error)
         return {
             "connected": False,
             "source": source if oauth_token else "Reddit unavailable",
@@ -2275,47 +2358,7 @@ def fetch_reddit_attention(ticker: str) -> tuple[dict, list[str]]:
             "error": "; ".join(errors[:5]),
         }, [f"Reddit search unavailable: {'; '.join(errors[:5]) or 'unknown error'}."]
 
-    total_comments = sum(item["comments"] for item in posts)
-    total_score = sum(max(item["score"], 0) for item in posts)
-    avg_upvote_ratio = sum(item["upvote_ratio"] for item in posts) / len(posts) if posts else 0
-    active_subreddits = len({item["subreddit"] for item in posts})
-    heat = clamp(
-        min(len(posts), 80) / 80 * 42
-        + min(math.log10(total_comments + 1), 4) / 4 * 24
-        + min(math.log10(total_score + 1), 4) / 4 * 20
-        + min(active_subreddits, 8) / 8 * 10
-        + avg_upvote_ratio * 4,
-        0,
-        100,
-    )
-    today = date.today()
-    daily = []
-    for days_ago in range(6, -1, -1):
-        day = today - timedelta(days=days_ago)
-        key = day.isoformat()
-        day_posts = [item for item in posts if item.get("created") == key]
-        daily.append({
-            "date": key,
-            "posts": len(day_posts),
-            "comments": sum(item["comments"] for item in day_posts),
-            "upvotes": sum(max(item["score"], 0) for item in day_posts),
-        })
-    top_posts = sorted(posts, key=lambda item: item["score"] + item["comments"] * 2, reverse=True)[:5]
-
-    return {
-        "connected": True,
-        "source": source,
-        "score": round(heat),
-        "posts": len(posts),
-        "comments": total_comments,
-        "upvotes": total_score,
-        "avg_upvote_ratio": avg_upvote_ratio,
-        "daily": daily,
-        "active_subreddits": active_subreddits,
-        "top_posts": top_posts,
-        "searched_subreddits": REDDIT_SUBREDDITS,
-        "errors": errors[:4],
-    }, [f"{source} connected across {successful_requests}/{len(REDDIT_SUBREDDITS)} subreddits."]
+    return build_reddit_attention_payload(posts, source, successful_requests, errors), [f"{source} connected across {successful_requests}/{len(REDDIT_SUBREDDITS)} subreddits."]
 
 
 def risk_model(snapshot: dict, fin: dict, metrics: dict, profile: dict, valuation: dict) -> dict:

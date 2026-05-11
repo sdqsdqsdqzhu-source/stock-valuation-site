@@ -1,0 +1,1387 @@
+{
+  "updated_at": "2026-05-11T21:43:26.631989Z",
+  "records": {
+    "NVDA": {
+      "cached_at": "2026-05-11T21:43:19.397710Z",
+      "source": "Local public Reddit JSON / 本地公开Reddit JSON",
+      "successful_subreddits": 8,
+      "searched_subreddits": [
+        "wallstreetbets",
+        "stocks",
+        "investing",
+        "StockMarket",
+        "options",
+        "SecurityAnalysis",
+        "ValueInvesting",
+        "pennystocks"
+      ],
+      "posts": [
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "$15k in 15 mins with NQ futures and NVDA 220c 5/11",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1ta408r/15k_in_15_mins_with_nq_futures_and_nvda_220c_511/",
+          "score": 17,
+          "comments": 15,
+          "upvote_ratio": 0.94,
+          "created_utc": 1778507652.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "MU is on fire with room to run",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t85kp9/mu_is_on_fire_with_room_to_run/",
+          "score": 417,
+          "comments": 229,
+          "upvote_ratio": 0.84,
+          "created_utc": 1778334649.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Up 250k in the last month from 17k initial… INTC AMD 90% of what I played.",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7w3sp/up_250k_in_the_last_month_from_17k_initial_intc/",
+          "score": 273,
+          "comments": 52,
+          "upvote_ratio": 0.9,
+          "created_utc": 1778305388.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Tech is going to keep ripping and continue through NVDA earnings (position in XLK)",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7kfic/tech_is_going_to_keep_ripping_and_continue/",
+          "score": 6,
+          "comments": 2,
+          "upvote_ratio": 0.75,
+          "created_utc": 1778273786.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "$250 into $5,700 on $INTC &amp; $AAPL deal!! 🔥🔥🚀",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7ebxp/250_into_5700_on_intc_aapl_deal/",
+          "score": 353,
+          "comments": 91,
+          "upvote_ratio": 0.97,
+          "created_utc": 1778260623.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "DD: Why Micron (MU) and Memory (DRAM ETF) is still an Undervalued Play in the AI Supercycle",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t5irp0/dd_why_micron_mu_and_memory_dram_etf_is_still_an/",
+          "score": 53,
+          "comments": 114,
+          "upvote_ratio": 0.7,
+          "created_utc": 1778086628.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "8th Grade Research Project: QCOM",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t5hz5c/8th_grade_research_project_qcom/",
+          "score": 0,
+          "comments": 24,
+          "upvote_ratio": 0.46,
+          "created_utc": 1778084987.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Amazon's Chip Business Is Bigger Than AMD, Could Soon Pass Broadcom, Intel",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t5gtdk/amazons_chip_business_is_bigger_than_amd_could/",
+          "score": 344,
+          "comments": 60,
+          "upvote_ratio": 0.89,
+          "created_utc": 1778082543.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Nokia DD",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t4vj8z/nokia_dd/",
+          "score": 116,
+          "comments": 80,
+          "upvote_ratio": 0.91,
+          "created_utc": 1778022463.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Gains (QQQ + AMD + MU)",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t4h4es/gains_qqq_amd_mu/",
+          "score": 493,
+          "comments": 75,
+          "upvote_ratio": 0.93,
+          "created_utc": 1777991311.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "NVDA $235+ by May 22",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t40xmj/nvda_235_by_may_22/",
+          "score": 157,
+          "comments": 163,
+          "upvote_ratio": 0.89,
+          "created_utc": 1777943909.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "NVDA and ORCL YOLO - May the Fourth be with you! $10,000 each ending May 8th",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t3p544/nvda_and_orcl_yolo_may_the_fourth_be_with_you/",
+          "score": 21,
+          "comments": 34,
+          "upvote_ratio": 0.83,
+          "created_utc": 1777917030.0,
+          "created": "2026-05-04"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Another 10,000% gain - INTC",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t3a1gy/another_10000_gain_intc/",
+          "score": 582,
+          "comments": 77,
+          "upvote_ratio": 0.92,
+          "created_utc": 1777877549.0,
+          "created": "2026-05-04"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "What are the odds memory chip costs will stabilize? NTDOY play",
+          "url": "https://www.reddit.com/r/stocks/comments/1t9b5hp/what_are_the_odds_memory_chip_costs_will/",
+          "score": 29,
+          "comments": 34,
+          "upvote_ratio": 0.78,
+          "created_utc": 1778429554.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "£33k, 5 weeks, software/AI rotation play strategy feedback",
+          "url": "https://www.reddit.com/r/stocks/comments/1t960h4/33k_5_weeks_softwareai_rotation_play_strategy/",
+          "score": 0,
+          "comments": 8,
+          "upvote_ratio": 0.09,
+          "created_utc": 1778417222.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "What do you think could bring in growth in next 1-3 years?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t91cgl/what_do_you_think_could_bring_in_growth_in_next/",
+          "score": 187,
+          "comments": 235,
+          "upvote_ratio": 0.82,
+          "created_utc": 1778402194.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Anyone else feel mentally messed up seeing people casually make insane money trading options?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t8r0gr/anyone_else_feel_mentally_messed_up_seeing_people/",
+          "score": 1461,
+          "comments": 462,
+          "upvote_ratio": 0.92,
+          "created_utc": 1778370806.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "MU is on fire with room to run",
+          "url": "https://www.reddit.com/r/stocks/comments/1t85n9l/mu_is_on_fire_with_room_to_run/",
+          "score": 0,
+          "comments": 20,
+          "upvote_ratio": 0.42,
+          "created_utc": 1778334832.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "How not to miss \"obvious plays\" in front of us?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7sfqm/how_not_to_miss_obvious_plays_in_front_of_us/",
+          "score": 0,
+          "comments": 66,
+          "upvote_ratio": 0.45,
+          "created_utc": 1778294405.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Valuation vs. Investment - (Myth-Busting)",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7fvdk/valuation_vs_investment_mythbusting/",
+          "score": 9,
+          "comments": 4,
+          "upvote_ratio": 0.69,
+          "created_utc": 1778263797.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Why is everyone so down?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7e7n0/why_is_everyone_so_down/",
+          "score": 0,
+          "comments": 142,
+          "upvote_ratio": 0.45,
+          "created_utc": 1778260382.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "NVIDIA and IREN Announce Strategic Partnership to Accelerate Deployment of up to 5 Gigawatts of AI Infrastructure, IREN +25% AH",
+          "url": "https://www.reddit.com/r/stocks/comments/1t6mty3/nvidia_and_iren_announce_strategic_partnership_to/",
+          "score": 164,
+          "comments": 20,
+          "upvote_ratio": 0.94,
+          "created_utc": 1778186463.0,
+          "created": "2026-05-07"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Anyone know of an AI Energy and Infrastructure ETF - minus semiconductor?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t6gjp7/anyone_know_of_an_ai_energy_and_infrastructure/",
+          "score": 27,
+          "comments": 14,
+          "upvote_ratio": 0.88,
+          "created_utc": 1778173296.0,
+          "created": "2026-05-07"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Why do we chase 10x underdogs instead of proven winners for 1x or 2x upside? $GOOGL, $AMZN, $NVDA",
+          "url": "https://www.reddit.com/r/stocks/comments/1t509id/why_do_we_chase_10x_underdogs_instead_of_proven/",
+          "score": 530,
+          "comments": 308,
+          "upvote_ratio": 0.86,
+          "created_utc": 1778035105.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/investing",
+          "title": "Investing strat for AI/semi cond",
+          "url": "https://www.reddit.com/r/investing/comments/1t7zntt/investing_strat_for_aisemi_cond/",
+          "score": 5,
+          "comments": 13,
+          "upvote_ratio": 0.63,
+          "created_utc": 1778317283.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/investing",
+          "title": "Is there a reason Qualcomm went from 125 to 220 in a week? No one uses them for AI, edge computing, soon Apple will not use their modems",
+          "url": "https://www.reddit.com/r/investing/comments/1t6kzo2/is_there_a_reason_qualcomm_went_from_125_to_220/",
+          "score": 164,
+          "comments": 103,
+          "upvote_ratio": 0.86,
+          "created_utc": 1778182573.0,
+          "created": "2026-05-07"
+        },
+        {
+          "subreddit": "r/investing",
+          "title": "What's more important than power in the AI era?",
+          "url": "https://www.reddit.com/r/investing/comments/1t3ady7/whats_more_important_than_power_in_the_ai_era/",
+          "score": 16,
+          "comments": 17,
+          "upvote_ratio": 0.76,
+          "created_utc": 1777878757.0,
+          "created": "2026-05-04"
+        },
+        {
+          "subreddit": "r/StockMarket",
+          "title": "NVDA B200 Blackwell GPU Rental price fell by -30% this weekend",
+          "url": "https://www.reddit.com/r/StockMarket/comments/1t9w6qp/nvda_b200_blackwell_gpu_rental_price_fell_by_30/",
+          "score": 535,
+          "comments": 132,
+          "upvote_ratio": 0.95,
+          "created_utc": 1778484826.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/StockMarket",
+          "title": "The SOX has caught up to NVDA for the last 24 month time period.",
+          "url": "https://www.reddit.com/r/StockMarket/comments/1t4util/the_sox_has_caught_up_to_nvda_for_the_last_24/",
+          "score": 9,
+          "comments": 4,
+          "upvote_ratio": 0.8,
+          "created_utc": 1778020714.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "Deep ITM NVDA Cover calls, Roll, Hold or accept assignment ?",
+          "url": "https://www.reddit.com/r/options/comments/1tacor1/deep_itm_nvda_cover_calls_roll_hold_or_accept/",
+          "score": 4,
+          "comments": 14,
+          "upvote_ratio": 0.83,
+          "created_utc": 1778525614.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "ASTS earnings?",
+          "url": "https://www.reddit.com/r/options/comments/1t97033/asts_earnings/",
+          "score": 33,
+          "comments": 28,
+          "upvote_ratio": 0.88,
+          "created_utc": 1778419797.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "Decent strategy to make monthly income via ITM options?",
+          "url": "https://www.reddit.com/r/options/comments/1t8893a/decent_strategy_to_make_monthly_income_via_itm/",
+          "score": 8,
+          "comments": 39,
+          "upvote_ratio": 0.76,
+          "created_utc": 1778340987.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "$25K AI options portfolio: Day 1 -$10.88, Day 2 +5.2%, and 4 bugs to discuss",
+          "url": "https://www.reddit.com/r/options/comments/1t5vwb2/25k_ai_options_portfolio_day_1_1088_day_2_52_and/",
+          "score": 0,
+          "comments": 7,
+          "upvote_ratio": 0.5,
+          "created_utc": 1778116260.0,
+          "created": "2026-05-07"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "Margin loan at 13% (E*TRADE) vs SPX box spread financing — worth it?",
+          "url": "https://www.reddit.com/r/options/comments/1t5kx4w/margin_loan_at_13_etrade_vs_spx_box_spread/",
+          "score": 3,
+          "comments": 25,
+          "upvote_ratio": 0.64,
+          "created_utc": 1778090968.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "I followed unusual option flow signals for all of April. Here are the actual trades, wins and losses",
+          "url": "https://www.reddit.com/r/options/comments/1t370jh/i_followed_unusual_option_flow_signals_for_all_of/",
+          "score": 12,
+          "comments": 27,
+          "upvote_ratio": 0.75,
+          "created_utc": 1777867618.0,
+          "created": "2026-05-04"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Thoughts on Agentic AI needing 1000xmore compute than today's AI",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1tah6e0/thoughts_on_agentic_ai_needing_1000xmore_compute/",
+          "score": 1,
+          "comments": 5,
+          "upvote_ratio": 0.67,
+          "created_utc": 1778535015.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "NVIDA the real winner",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1taeydl/nvida_the_real_winner/",
+          "score": 0,
+          "comments": 19,
+          "upvote_ratio": 0.38,
+          "created_utc": 1778530320.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "GEV, ETN, ANET, ARM - (20M - ~45K+)",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t8nepx/gev_etn_anet_arm_20m_45k/",
+          "score": 15,
+          "comments": 7,
+          "upvote_ratio": 0.78,
+          "created_utc": 1778361566.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "So many people here misses real value in front of them",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t7vx73/so_many_people_here_misses_real_value_in_front_of/",
+          "score": 30,
+          "comments": 115,
+          "upvote_ratio": 0.61,
+          "created_utc": 1778304793.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Help me understand how Nvidia is not overvalued. (Bear Thesis: NVDA)",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t7t2yv/help_me_understand_how_nvidia_is_not_overvalued/",
+          "score": 0,
+          "comments": 69,
+          "upvote_ratio": 0.49,
+          "created_utc": 1778296249.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "AI Euphoria and the Allure of Unlimited Growth",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t5wdxx/ai_euphoria_and_the_allure_of_unlimited_growth/",
+          "score": 72,
+          "comments": 117,
+          "upvote_ratio": 0.82,
+          "created_utc": 1778117588.0,
+          "created": "2026-05-07"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "McDonald’s - the best business that is cheap now!",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t5qf7l/mcdonalds_the_best_business_that_is_cheap_now/",
+          "score": 0,
+          "comments": 57,
+          "upvote_ratio": 0.5,
+          "created_utc": 1778102719.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Yes I am feeling the fomo and I feel so bad",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t4yzd6/yes_i_am_feeling_the_fomo_and_i_feel_so_bad/",
+          "score": 65,
+          "comments": 143,
+          "upvote_ratio": 0.7,
+          "created_utc": 1778031603.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "AMD vs NVDA",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t4q7sp/amd_vs_nvda/",
+          "score": 0,
+          "comments": 9,
+          "upvote_ratio": 0.36,
+          "created_utc": 1778010323.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Market is pricing MU wrong, Memory is not cyclical anymore",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t4mzjh/market_is_pricing_mu_wrong_memory_is_not_cyclical/",
+          "score": 209,
+          "comments": 258,
+          "upvote_ratio": 0.82,
+          "created_utc": 1778003551.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Which of these ETFs are you buying/pairing",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t3m3t1/which_of_these_etfs_are_you_buyingpairing/",
+          "score": 0,
+          "comments": 0,
+          "upvote_ratio": 0.5,
+          "created_utc": 1777910762.0,
+          "created": "2026-05-04"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "MU is a Value Stock?",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t3jw06/mu_is_a_value_stock/",
+          "score": 56,
+          "comments": 107,
+          "upvote_ratio": 0.77,
+          "created_utc": 1777906097.0,
+          "created": "2026-05-04"
+        }
+      ],
+      "errors": []
+    },
+    "MU": {
+      "cached_at": "2026-05-11T21:43:22.408949Z",
+      "source": "Local public Reddit JSON / 本地公开Reddit JSON",
+      "successful_subreddits": 8,
+      "searched_subreddits": [
+        "wallstreetbets",
+        "stocks",
+        "investing",
+        "StockMarket",
+        "options",
+        "SecurityAnalysis",
+        "ValueInvesting",
+        "pennystocks"
+      ],
+      "posts": [
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Why is there so much hype around DRAM?",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1tadzgt/why_is_there_so_much_hype_around_dram/",
+          "score": 52,
+          "comments": 93,
+          "upvote_ratio": 0.84,
+          "created_utc": 1778528276.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Not selling until MU hits $2k",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1taa97i/not_selling_until_mu_hits_2k/",
+          "score": 183,
+          "comments": 60,
+          "upvote_ratio": 0.93,
+          "created_utc": 1778520683.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "The rally continues… MU",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1ta9mly/the_rally_continues_mu/",
+          "score": 423,
+          "comments": 73,
+          "upvote_ratio": 0.97,
+          "created_utc": 1778519418.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "MU to the moon - 100k gain!",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1ta682c/mu_to_the_moon_100k_gain/",
+          "score": 53,
+          "comments": 9,
+          "upvote_ratio": 0.88,
+          "created_utc": 1778512358.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "300k bet on all time highs. Bought today",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1ta5ejt/300k_bet_on_all_time_highs_bought_today/",
+          "score": 49,
+          "comments": 23,
+          "upvote_ratio": 0.85,
+          "created_utc": 1778510653.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "MU stock = mega up stock.",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t9n16y/mu_stock_mega_up_stock/",
+          "score": 85,
+          "comments": 15,
+          "upvote_ratio": 0.9,
+          "created_utc": 1778457576.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Su-bae has always been the one",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t8a6k6/subae_has_always_been_the_one/",
+          "score": 372,
+          "comments": 29,
+          "upvote_ratio": 0.95,
+          "created_utc": 1778345411.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "MU is on fire with room to run",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t85kp9/mu_is_on_fire_with_room_to_run/",
+          "score": 421,
+          "comments": 229,
+          "upvote_ratio": 0.84,
+          "created_utc": 1778334649.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "WDC will run higher next!!! FU Money!",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t852py/wdc_will_run_higher_next_fu_money/",
+          "score": 13,
+          "comments": 31,
+          "upvote_ratio": 0.64,
+          "created_utc": 1778333387.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Any WSB OGs remember the MU $80 memes? Today MU went up more than that amount in a single day",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7shk9/any_wsb_ogs_remember_the_mu_80_memes_today_mu/",
+          "score": 2735,
+          "comments": 266,
+          "upvote_ratio": 0.97,
+          "created_utc": 1778294549.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "300% MU gain but Paper Handed 1,600% Generational Wealth🤦🏻‍♂️",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7nvsz/300_mu_gain_but_paper_handed_1600_generational/",
+          "score": 308,
+          "comments": 91,
+          "upvote_ratio": 0.93,
+          "created_utc": 1778281998.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Things have been going alright",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7mq0c/things_have_been_going_alright/",
+          "score": 39,
+          "comments": 33,
+          "upvote_ratio": 0.87,
+          "created_utc": 1778279084.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Bulls go MU",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7mcv9/bulls_go_mu/",
+          "score": 53,
+          "comments": 6,
+          "upvote_ratio": 0.92,
+          "created_utc": 1778278239.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "MU and MUU Gains",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7kz8t/mu_and_muu_gains/",
+          "score": 13,
+          "comments": 2,
+          "upvote_ratio": 0.84,
+          "created_utc": 1778275001.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "A WHOLE CIVILIZATION OF BEARS WILL DIE TONIGHT, NEVER TO BE BROUGHT BACK AGAIN.🐻🐻🐻🐻🐻",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7kjjl/a_whole_civilization_of_bears_will_die_tonight/",
+          "score": 1946,
+          "comments": 184,
+          "upvote_ratio": 0.94,
+          "created_utc": 1778274035.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "400K gain from MU in 6 days",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7jx7j/400k_gain_from_mu_in_6_days/",
+          "score": 134,
+          "comments": 27,
+          "upvote_ratio": 0.92,
+          "created_utc": 1778272641.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "$MU just won’t stop going up!!",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7j8b2/mu_just_wont_stop_going_up/",
+          "score": 28,
+          "comments": 9,
+          "upvote_ratio": 0.84,
+          "created_utc": 1778271124.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "If you had $7.5k to invest tomorrow, what would you do in this current market?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t9dj9v/if_you_had_75k_to_invest_tomorrow_what_would_you/",
+          "score": 329,
+          "comments": 563,
+          "upvote_ratio": 0.83,
+          "created_utc": 1778434942.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "What are the odds memory chip costs will stabilize? NTDOY play",
+          "url": "https://www.reddit.com/r/stocks/comments/1t9b5hp/what_are_the_odds_memory_chip_costs_will/",
+          "score": 28,
+          "comments": 34,
+          "upvote_ratio": 0.78,
+          "created_utc": 1778429554.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "£33k, 5 weeks, software/AI rotation play strategy feedback",
+          "url": "https://www.reddit.com/r/stocks/comments/1t960h4/33k_5_weeks_softwareai_rotation_play_strategy/",
+          "score": 0,
+          "comments": 8,
+          "upvote_ratio": 0.09,
+          "created_utc": 1778417222.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "MU is on fire with room to run",
+          "url": "https://www.reddit.com/r/stocks/comments/1t85n9l/mu_is_on_fire_with_room_to_run/",
+          "score": 0,
+          "comments": 20,
+          "upvote_ratio": 0.4,
+          "created_utc": 1778334832.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "How can the market accepts such a low forward P/E for MU?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7xh7t/how_can_the_market_accepts_such_a_low_forward_pe/",
+          "score": 84,
+          "comments": 129,
+          "upvote_ratio": 0.72,
+          "created_utc": 1778309871.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "How not to miss \"obvious plays\" in front of us?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7sfqm/how_not_to_miss_obvious_plays_in_front_of_us/",
+          "score": 0,
+          "comments": 66,
+          "upvote_ratio": 0.43,
+          "created_utc": 1778294405.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Is Celestica still a good long-term investment after its recent run-up?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7q8gc/is_celestica_still_a_good_longterm_investment/",
+          "score": 12,
+          "comments": 5,
+          "upvote_ratio": 0.85,
+          "created_utc": 1778288278.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Last year, a friend recommended buying MU, and now it’s the star of my portfolio with a target of $1,000",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7eqxh/last_year_a_friend_recommended_buying_mu_and_now/",
+          "score": 0,
+          "comments": 41,
+          "upvote_ratio": 0.25,
+          "created_utc": 1778261479.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Is MRVL the next MU?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7bpyn/is_mrvl_the_next_mu/",
+          "score": 27,
+          "comments": 50,
+          "upvote_ratio": 0.66,
+          "created_utc": 1778255056.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "MU is just heating up",
+          "url": "https://www.reddit.com/r/stocks/comments/1t5bopt/mu_is_just_heating_up/",
+          "score": 9,
+          "comments": 60,
+          "upvote_ratio": 0.56,
+          "created_utc": 1778071141.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Converting ITM covered call position to call debit spread to avoid wash sale and reduce short-term capital gains tax?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t4c54o/converting_itm_covered_call_position_to_call/",
+          "score": 3,
+          "comments": 4,
+          "upvote_ratio": 0.62,
+          "created_utc": 1777979026.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Feeling lost on AI stocks",
+          "url": "https://www.reddit.com/r/stocks/comments/1t3nol6/feeling_lost_on_ai_stocks/",
+          "score": 0,
+          "comments": 42,
+          "upvote_ratio": 0.32,
+          "created_utc": 1777914034.0,
+          "created": "2026-05-04"
+        },
+        {
+          "subreddit": "r/investing",
+          "title": "Current memory semiconductor sector sentiment: Value disconnect between MU and peer AI stocks",
+          "url": "https://www.reddit.com/r/investing/comments/1t6dbs4/current_memory_semiconductor_sector_sentiment/",
+          "score": 9,
+          "comments": 10,
+          "upvote_ratio": 0.67,
+          "created_utc": 1778166514.0,
+          "created": "2026-05-07"
+        },
+        {
+          "subreddit": "r/investing",
+          "title": "What's more important than power in the AI era?",
+          "url": "https://www.reddit.com/r/investing/comments/1t3ady7/whats_more_important_than_power_in_the_ai_era/",
+          "score": 16,
+          "comments": 17,
+          "upvote_ratio": 0.78,
+          "created_utc": 1777878757.0,
+          "created": "2026-05-04"
+        },
+        {
+          "subreddit": "r/StockMarket",
+          "title": "Does the stock performance of Micron (MU) destroy the efficient market hypnosis?",
+          "url": "https://www.reddit.com/r/StockMarket/comments/1ta10w0/does_the_stock_performance_of_micron_mu_destroy/",
+          "score": 159,
+          "comments": 61,
+          "upvote_ratio": 0.88,
+          "created_utc": 1778500450.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "Trying to get into AMD and MU",
+          "url": "https://www.reddit.com/r/options/comments/1t872th/trying_to_get_into_amd_and_mu/",
+          "score": 27,
+          "comments": 74,
+          "upvote_ratio": 0.68,
+          "created_utc": 1778338276.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "Long-term MU shareholder, first time considering calls — framework advice?",
+          "url": "https://www.reddit.com/r/options/comments/1t7uxxf/longterm_mu_shareholder_first_time_considering/",
+          "score": 32,
+          "comments": 23,
+          "upvote_ratio": 0.97,
+          "created_utc": 1778301750.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "Micron",
+          "url": "https://www.reddit.com/r/options/comments/1t6vmsm/micron/",
+          "score": 32,
+          "comments": 44,
+          "upvote_ratio": 0.86,
+          "created_utc": 1778209114.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "Converting ITM CC to call debit spread to avoid wash sale and reduce short-term capital gains tax?",
+          "url": "https://www.reddit.com/r/options/comments/1t4c2d7/converting_itm_cc_to_call_debit_spread_to_avoid/",
+          "score": 3,
+          "comments": 8,
+          "upvote_ratio": 0.67,
+          "created_utc": 1777978812.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "Looking for input on tax strategy: closing covered call at loss to offset short-term capital gains",
+          "url": "https://www.reddit.com/r/options/comments/1t43v9k/looking_for_input_on_tax_strategy_closing_covered/",
+          "score": 4,
+          "comments": 7,
+          "upvote_ratio": 0.76,
+          "created_utc": 1777951779.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "I followed unusual option flow signals for all of April. Here are the actual trades, wins and losses",
+          "url": "https://www.reddit.com/r/options/comments/1t370jh/i_followed_unusual_option_flow_signals_for_all_of/",
+          "score": 11,
+          "comments": 27,
+          "upvote_ratio": 0.74,
+          "created_utc": 1777867618.0,
+          "created": "2026-05-04"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "NVIDA the real winner",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1taeydl/nvida_the_real_winner/",
+          "score": 0,
+          "comments": 19,
+          "upvote_ratio": 0.41,
+          "created_utc": 1778530320.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Cyclical nature of semi completely shifted",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1tacfs4/cyclical_nature_of_semi_completely_shifted/",
+          "score": 0,
+          "comments": 61,
+          "upvote_ratio": 0.35,
+          "created_utc": 1778525112.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "MU at $746, 120% YTD, where does the margin of safety actually sit on memory right now?",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t9skp2/mu_at_746_120_ytd_where_does_the_margin_of_safety/",
+          "score": 113,
+          "comments": 129,
+          "upvote_ratio": 0.91,
+          "created_utc": 1778473151.0,
+          "created": "2026-05-11"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "AI Wave - December Reset?",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t9anft/ai_wave_december_reset/",
+          "score": 2,
+          "comments": 26,
+          "upvote_ratio": 0.6,
+          "created_utc": 1778428439.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Micron was a good buy 4 years ago",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t980yc/micron_was_a_good_buy_4_years_ago/",
+          "score": 171,
+          "comments": 106,
+          "upvote_ratio": 0.77,
+          "created_utc": 1778422339.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "is Micron Technology a Hold or Sell at its current levels?  (MU)",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t88pzr/is_micron_technology_a_hold_or_sell_at_its/",
+          "score": 171,
+          "comments": 203,
+          "upvote_ratio": 0.9,
+          "created_utc": 1778342083.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "So many people here misses real value in front of them",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t7vx73/so_many_people_here_misses_real_value_in_front_of/",
+          "score": 30,
+          "comments": 115,
+          "upvote_ratio": 0.61,
+          "created_utc": 1778304793.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Something is rotten in the state of Denmark…",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t7n41n/something_is_rotten_in_the_state_of_denmark/",
+          "score": 0,
+          "comments": 26,
+          "upvote_ratio": 0.39,
+          "created_utc": 1778280066.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Came here looking for a Value Investment advice about Micron Stock $MU",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t7i48j/came_here_looking_for_a_value_investment_advice/",
+          "score": 14,
+          "comments": 128,
+          "upvote_ratio": 0.65,
+          "created_utc": 1778268648.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "**Future of chips/memory (As of May 8th, 2026)",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t7hcqx/future_of_chipsmemory_as_of_may_8th_2026/",
+          "score": 12,
+          "comments": 42,
+          "upvote_ratio": 0.81,
+          "created_utc": 1778266990.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Besides AI wich Stocks are you looking for?",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t6v0oe/besides_ai_wich_stocks_are_you_looking_for/",
+          "score": 16,
+          "comments": 46,
+          "upvote_ratio": 0.75,
+          "created_utc": 1778207378.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Brad Gerstner on the Economy of AI Supercycle - Inference, Infrastructure and What’s Next",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t6oehs/brad_gerstner_on_the_economy_of_ai_supercycle/",
+          "score": 5,
+          "comments": 15,
+          "upvote_ratio": 0.79,
+          "created_utc": 1778189994.0,
+          "created": "2026-05-07"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "AI Euphoria and the Allure of Unlimited Growth",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t5wdxx/ai_euphoria_and_the_allure_of_unlimited_growth/",
+          "score": 75,
+          "comments": 117,
+          "upvote_ratio": 0.82,
+          "created_utc": 1778117588.0,
+          "created": "2026-05-07"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "My value algorithm flagged Micron as the #1 value pick in the S&amp;P 500 on April 1st. I thought it was a bug.",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t593qy/my_value_algorithm_flagged_micron_as_the_1_value/",
+          "score": 29,
+          "comments": 48,
+          "upvote_ratio": 0.62,
+          "created_utc": 1778064039.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Recommendations for Next Hidden Gem 💎 Stock , Looking for the Next MU / SNDK",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t53m60/recommendations_for_next_hidden_gem_stock_looking/",
+          "score": 0,
+          "comments": 44,
+          "upvote_ratio": 0.41,
+          "created_utc": 1778044991.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Market is pricing MU wrong, Memory is not cyclical anymore",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t4mzjh/market_is_pricing_mu_wrong_memory_is_not_cyclical/",
+          "score": 210,
+          "comments": 258,
+          "upvote_ratio": 0.82,
+          "created_utc": 1778003551.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Is MU really a trillion dollar company?",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t4g55i/is_mu_really_a_trillion_dollar_company/",
+          "score": 185,
+          "comments": 200,
+          "upvote_ratio": 0.93,
+          "created_utc": 1777989184.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Which of these ETFs are you buying/pairing",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t3m3t1/which_of_these_etfs_are_you_buyingpairing/",
+          "score": 0,
+          "comments": 0,
+          "upvote_ratio": 0.5,
+          "created_utc": 1777910762.0,
+          "created": "2026-05-04"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "MU is a Value Stock?",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t3jw06/mu_is_a_value_stock/",
+          "score": 59,
+          "comments": 107,
+          "upvote_ratio": 0.77,
+          "created_utc": 1777906097.0,
+          "created": "2026-05-04"
+        }
+      ],
+      "errors": []
+    },
+    "SNDK": {
+      "cached_at": "2026-05-11T21:43:24.921041Z",
+      "source": "Local public Reddit JSON / 本地公开Reddit JSON",
+      "successful_subreddits": 8,
+      "searched_subreddits": [
+        "wallstreetbets",
+        "stocks",
+        "investing",
+        "StockMarket",
+        "options",
+        "SecurityAnalysis",
+        "ValueInvesting",
+        "pennystocks"
+      ],
+      "posts": [
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "WDC will run higher next!!! FU Money!",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t852py/wdc_will_run_higher_next_fu_money/",
+          "score": 13,
+          "comments": 31,
+          "upvote_ratio": 0.64,
+          "created_utc": 1778333387.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "SNDK Gains (38k)",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7kzgj/sndk_gains_38k/",
+          "score": 18,
+          "comments": 10,
+          "upvote_ratio": 0.9,
+          "created_utc": 1778275014.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "locked in 30k profits on my last minute sndk play before yesterdays close",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7aioh/locked_in_30k_profits_on_my_last_minute_sndk_play/",
+          "score": 26,
+          "comments": 4,
+          "upvote_ratio": 0.9,
+          "created_utc": 1778252489.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "SNDK 1365c 08May expiration: $10K -&gt; $3K -&gt; $16.5K",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7aesw/sndk_1365c_08may_expiration_10k_3k_165k/",
+          "score": 19,
+          "comments": 5,
+          "upvote_ratio": 0.86,
+          "created_utc": 1778252273.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Sndk gains",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t5mlyh/sndk_gains/",
+          "score": 31,
+          "comments": 15,
+          "upvote_ratio": 0.81,
+          "created_utc": 1778094517.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "MU is just heating up",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t5bnpj/mu_is_just_heating_up/",
+          "score": 41,
+          "comments": 58,
+          "upvote_ratio": 0.72,
+          "created_utc": 1778071072.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "How can someone find the next sndk?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t9lpxe/how_can_someone_find_the_next_sndk/",
+          "score": 0,
+          "comments": 46,
+          "upvote_ratio": 0.34,
+          "created_utc": 1778454084.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "£33k, 5 weeks, software/AI rotation play strategy feedback",
+          "url": "https://www.reddit.com/r/stocks/comments/1t960h4/33k_5_weeks_softwareai_rotation_play_strategy/",
+          "score": 0,
+          "comments": 8,
+          "upvote_ratio": 0.17,
+          "created_utc": 1778417222.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Need opinions on selling most of my stocks to buy another. NVida vs SNDK",
+          "url": "https://www.reddit.com/r/stocks/comments/1t8zb0f/need_opinions_on_selling_most_of_my_stocks_to_buy/",
+          "score": 86,
+          "comments": 49,
+          "upvote_ratio": 0.78,
+          "created_utc": 1778395224.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Is the current AI-driven memory cycle different this time, or are stocks like SNDK still likely to follow the usual boom-bust pattern?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7zkh7/is_the_current_aidriven_memory_cycle_different/",
+          "score": 59,
+          "comments": 68,
+          "upvote_ratio": 0.87,
+          "created_utc": 1778316965.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "How not to miss \"obvious plays\" in front of us?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7sfqm/how_not_to_miss_obvious_plays_in_front_of_us/",
+          "score": 0,
+          "comments": 66,
+          "upvote_ratio": 0.43,
+          "created_utc": 1778294405.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Is Celestica still a good long-term investment after its recent run-up?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7q8gc/is_celestica_still_a_good_longterm_investment/",
+          "score": 13,
+          "comments": 5,
+          "upvote_ratio": 0.85,
+          "created_utc": 1778288278.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "My take on SNDK",
+          "url": "https://www.reddit.com/r/stocks/comments/1t6olns/my_take_on_sndk/",
+          "score": 0,
+          "comments": 29,
+          "upvote_ratio": 0.47,
+          "created_utc": 1778190464.0,
+          "created": "2026-05-07"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "SNDK down because Western Digital Enters Equity-for-Equity Exchange Agreements ?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t5ecm7/sndk_down_because_western_digital_enters/",
+          "score": 0,
+          "comments": 14,
+          "upvote_ratio": 0.44,
+          "created_utc": 1778077226.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "MU is just heating up",
+          "url": "https://www.reddit.com/r/stocks/comments/1t5bopt/mu_is_just_heating_up/",
+          "score": 2,
+          "comments": 60,
+          "upvote_ratio": 0.51,
+          "created_utc": 1778071141.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Feeling lost on AI stocks",
+          "url": "https://www.reddit.com/r/stocks/comments/1t3nol6/feeling_lost_on_ai_stocks/",
+          "score": 0,
+          "comments": 42,
+          "upvote_ratio": 0.39,
+          "created_utc": 1777914034.0,
+          "created": "2026-05-04"
+        },
+        {
+          "subreddit": "r/investing",
+          "title": "What is the next Sandisk?",
+          "url": "https://www.reddit.com/r/investing/comments/1t61bhg/what_is_the_next_sandisk/",
+          "score": 0,
+          "comments": 60,
+          "upvote_ratio": 0.42,
+          "created_utc": 1778131937.0,
+          "created": "2026-05-07"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "So many people here misses real value in front of them",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t7vx73/so_many_people_here_misses_real_value_in_front_of/",
+          "score": 29,
+          "comments": 115,
+          "upvote_ratio": 0.61,
+          "created_utc": 1778304793.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "AI Euphoria and the Allure of Unlimited Growth",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t5wdxx/ai_euphoria_and_the_allure_of_unlimited_growth/",
+          "score": 76,
+          "comments": 117,
+          "upvote_ratio": 0.83,
+          "created_utc": 1778117588.0,
+          "created": "2026-05-07"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Recommendations for Next Hidden Gem 💎 Stock , Looking for the Next MU / SNDK",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t53m60/recommendations_for_next_hidden_gem_stock_looking/",
+          "score": 0,
+          "comments": 44,
+          "upvote_ratio": 0.41,
+          "created_utc": 1778044991.0,
+          "created": "2026-05-06"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Is MU really a trillion dollar company?",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t4g55i/is_mu_really_a_trillion_dollar_company/",
+          "score": 183,
+          "comments": 200,
+          "upvote_ratio": 0.93,
+          "created_utc": 1777989184.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Is it too late for SNDK STX &amp; LITE?",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t3tw77/is_it_too_late_for_sndk_stx_lite/",
+          "score": 4,
+          "comments": 43,
+          "upvote_ratio": 0.75,
+          "created_utc": 1777926971.0,
+          "created": "2026-05-04"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Which of these ETFs are you buying/pairing",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t3m3t1/which_of_these_etfs_are_you_buyingpairing/",
+          "score": 0,
+          "comments": 0,
+          "upvote_ratio": 0.5,
+          "created_utc": 1777910762.0,
+          "created": "2026-05-04"
+        }
+      ],
+      "errors": []
+    },
+    "SOFI": {
+      "cached_at": "2026-05-11T21:43:26.631989Z",
+      "source": "Local public Reddit JSON / 本地公开Reddit JSON",
+      "successful_subreddits": 8,
+      "searched_subreddits": [
+        "wallstreetbets",
+        "stocks",
+        "investing",
+        "StockMarket",
+        "options",
+        "SecurityAnalysis",
+        "ValueInvesting",
+        "pennystocks"
+      ],
+      "posts": [
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "SoFi Releases Its Q1 10-Q, Quietly Confirming Massive Fair Value Losses, Credit Card Distress",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7das0/sofi_releases_its_q1_10q_quietly_confirming/",
+          "score": 90,
+          "comments": 77,
+          "upvote_ratio": 0.77,
+          "created_utc": 1778258460.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "When will the vortex ofAI/memory/chip stocks sucking money out of other stocks end?",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7umw8/when_will_the_vortex_ofaimemorychip_stocks/",
+          "score": 25,
+          "comments": 39,
+          "upvote_ratio": 0.72,
+          "created_utc": 1778300806.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "SoFi Will Bounce Back",
+          "url": "https://www.reddit.com/r/stocks/comments/1t7a42z/sofi_will_bounce_back/",
+          "score": 189,
+          "comments": 128,
+          "upvote_ratio": 0.81,
+          "created_utc": 1778251635.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/investing",
+          "title": "21M, $-22 in the bank but i will reach my goal by 30!",
+          "url": "https://www.reddit.com/r/investing/comments/1t50ckt/21m_22_in_the_bank_but_i_will_reach_my_goal_by_30/",
+          "score": 0,
+          "comments": 27,
+          "upvote_ratio": 0.4,
+          "created_utc": 1778035338.0,
+          "created": "2026-05-06"
+        }
+      ],
+      "errors": []
+    }
+  }
+}

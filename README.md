@@ -59,3 +59,14 @@ http://127.0.0.1:8765
 - `REDDIT_USER_AGENT`：例如 `windows:stock-valuation-site:v1.0 (by u_yourname)`
 - `X_BEARER_TOKEN`：X recent search（如果账户有 credits）
 - `SEC_USER_AGENT`：SEC 请求标识，例如 `David stock dashboard your-email@example.com`
+
+## Reddit 本地缓存同步
+
+如果 Reddit 官方 API 申请太麻烦，可以用本地电脑抓公开搜索结果，再通过 GitHub/Vercel 同步给线上网站读取：
+
+```powershell
+cd C:\Users\David\market_dashboard\stock_valuation_site
+& C:\Users\David\python312\python.exe -X utf8 scripts\sync_reddit_cache.py NVDA MU SNDK SOFI --commit --push
+```
+
+脚本会写入 `public/data/reddit_cache.json`。Vercel 线上 API 如果无法直接访问 Reddit，会读取这份本地缓存，并在页面里标明来源是“本地Reddit缓存 / Local Reddit cache”。
