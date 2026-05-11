@@ -1518,6 +1518,37 @@ def build_dcf_lab(ticker: str, snapshot: dict, fin: dict, profile: dict, macro: 
     growth_stage_2 = clamp(growth_stage_1 * 0.35, -0.02, 0.10)
     terminal_growth = 0.025
     discount_rate = clamp(max(wacc, macro.get("discount_rate", 0.1)) + risk_discount(profile, metrics) * 0.5, 0.06, 0.18)
+    price_source = snapshot.get("source", "无法获得 / unavailable")
+    financial_source = fin.get("source", "无法获得 / unavailable")
+    macro_source = macro.get("source", "local baseline")
+    beta_source = "Futu beta preferred; model estimate used now / 优先富途β；当前为模型估算"
+    source_map = {
+        "current_price": f"{price_source} / 当前价来源",
+        "market_cap_b": f"{price_source} + diluted shares when needed / 行情源，不足时用股价×摊薄股数",
+        "shares_b": f"{financial_source} diluted shares / 摊薄股数",
+        "revenue_b": f"{financial_source} TTM revenue; Yahoo quarterly supplement when usable / TTM营收，Yahoo可用时补充",
+        "base_fcf_b": f"{financial_source} TTM operating cash flow - capex / TTM经营现金流-资本开支",
+        "fcf_margin": f"{financial_source} TTM FCF / TTM revenue / TTM自由现金流率",
+        "cash_b": f"{financial_source} cash and equivalents / 现金及等价物",
+        "debt_b": f"{financial_source} total debt; liabilities used only if debt field unavailable / 总债务，缺失时用负债近似",
+        "liabilities_b": f"{financial_source} total liabilities / 总负债",
+        "interest_expense_b": f"{financial_source} interest expense / 利息费用",
+        "pretax_income_b": f"{financial_source} pretax income / 税前利润",
+        "tax_provision_b": f"{financial_source} tax provision / 所得税",
+        "beta": beta_source,
+        "risk_free_rate": f"{macro_source}; FRED preferred / 无风险利率，优先FRED",
+        "market_return": "Manual default 10%; editable / 手动默认10%，可调整",
+        "cost_of_debt": f"{financial_source} interest expense / debt / 债务成本",
+        "cost_of_equity": "CAPM from risk-free rate, beta, market return / CAPM自动计算",
+        "tax_rate": f"{financial_source} tax provision / pretax income / 有效税率",
+        "debt_weight": "Debt / (market cap + debt) / 债务权重",
+        "equity_weight": "1 - debt weight / 股权权重",
+        "wacc": "Auto WACC from CAPM and debt cost / 自动WACC",
+        "discount_rate": "Auto WACC plus risk adjustment; editable / WACC加风险调整，可手动改",
+        "growth_stage_1": "Profile + recent revenue trend estimate; editable / 公司画像+近期营收趋势估算，可手动改",
+        "growth_stage_2": "Stage-1 fade estimate; editable / 第二阶段增长估算，可手动改",
+        "terminal_growth": "Manual default 2.5%; editable / 默认2.5%，可手动改",
+    }
     inputs = {
         "ticker": ticker,
         "current_price": round(price, 2),
@@ -1559,16 +1590,17 @@ def build_dcf_lab(ticker: str, snapshot: dict, fin: dict, profile: dict, macro: 
             row.append(calculate_dcf_model(scenario)["fair_price"])
         sensitivity.append({"discount_rate": round(inputs["discount_rate"] + discount_shift, 4), "values": row})
     return {
-        "source": "Excel-inspired DCF v2 + SEC/Futu/FRED auto-fill",
+        "source": "Yahoo-style DCF inputs, with SEC/Futu/FRED source labels / 类Yahoo口径DCF输入，并标注SEC/Futu/FRED来源",
         "units": "Billion USD unless noted",
         "inputs": inputs,
+        "input_sources": source_map,
         "result": result,
         "sensitivity": sensitivity,
         "notes": [
-            "新版 Excel 的 10 年两阶段 FCF 预测被保留，并加入 WACC 自动计算 / The new Excel-style 10-year two-stage FCF forecast is preserved with automatic WACC.",
-            "Revenue、OCF、Capex 和 FCF 优先使用最近 4 个季度合计，避免把单季 FCF 当成年化基础 / Revenue, OCF, Capex, and FCF prefer TTM sums to avoid treating one quarter as annual FCF.",
-            "WACC 默认用 CAPM：Cost of Equity = Risk-free + Beta * Market Premium；Cost of Debt = Interest Expense / Debt / Default WACC uses CAPM and interest expense over debt.",
-            "Beta 暂用股票画像估算，页面可手动改；后续可接 Yahoo/GuruFocus 精确 beta / Beta is estimated from the stock profile for now and can be manually edited; Yahoo or GuruFocus beta can be connected later.",
+            "你的 Excel 口径以 Yahoo Finance 为主；网页会优先展示 Yahoo/Nasdaq/Futu 行情，并对每个 DCF 输入标明真实来源 / Your Excel was mostly Yahoo-based; the site shows Yahoo/Nasdaq/Futu market inputs and labels every DCF input source.",
+            "财报三表字段目前主要来自 SEC EDGAR companyfacts，Yahoo quarterly 只在接口可用时补充 / Financial statement fields currently mainly come from SEC EDGAR; Yahoo quarterly supplements only when usable.",
+            "Beta 按你的习惯应优先取 Futu；当前线上拿不到 Futu beta 时会标明为估算，后续可接入 Futu 或 Yahoo beta / Beta should prefer Futu; when unavailable online it is labeled as estimated.",
+            "Revenue、OCF、Capex 和 FCF 使用最近 4 个季度合计，避免把单季 FCF 当成年化基础 / Revenue, OCF, Capex, and FCF use TTM sums to avoid annualizing one quarter.",
         ],
     }
 

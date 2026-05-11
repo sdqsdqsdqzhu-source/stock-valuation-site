@@ -383,6 +383,7 @@ const dcfFields = [
 
 function dcfInput(field, label, unit, step, scale = 1) {
   const value = currentData.dcf_lab.inputs[field];
+  const source = currentData.dcf_lab.input_sources?.[field] || "来源未标注 / source not labeled";
   const display = Number.isFinite(value) ? value * scale : 0;
   return `
     <label class="dcf-field">
@@ -391,6 +392,7 @@ function dcfInput(field, label, unit, step, scale = 1) {
         <input data-dcf="${field}" data-scale="${scale}" type="number" step="${step}" value="${display.toFixed(scale === 100 ? 2 : 3)}" />
         <em>${unitBi(unit)}</em>
       </div>
+      <small>${esc(source)}</small>
     </label>
   `;
 }
@@ -456,6 +458,7 @@ function renderDcfLab(data) {
           </table>
         </div>
         <div class="dcf-notes">
+          <span>${esc(lab.source || "")}</span>
           ${lab.notes.map((note) => `<span>${note}</span>`).join("")}
         </div>
       </div>

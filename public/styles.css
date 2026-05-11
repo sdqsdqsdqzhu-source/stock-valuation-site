@@ -783,6 +783,12 @@ select {
   font-style: normal;
 }
 
+.dcf-field small {
+  color: var(--muted);
+  line-height: 1.35;
+  min-height: 30px;
+}
+
 .dcf-output,
 .dcf-summary {
   display: grid;
