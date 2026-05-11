@@ -7,6 +7,7 @@ import random
 import re
 import subprocess
 import time
+import base64
 import urllib.parse
 import urllib.request
 import urllib.error
@@ -28,6 +29,7 @@ REDDIT_SUBREDDITS = [
     "ValueInvesting",
     "pennystocks",
 ]
+REDDIT_TOKEN_CACHE = {"token": None, "expires_at": 0.0}
 
 
 CIK_BY_TICKER = {
@@ -2007,11 +2009,11 @@ def attention_model(ticker: str, snapshot: dict, profile: dict, price_context: d
         {"name": "Volume ratio", "value": round(volume_heat), "detail": f"量比 / Volume ratio {volume_ratio:.2f}x；5日/20日成交量趋势 / 5D vs 20D volume trend {volume_trend:.2f}x。"},
         {"name": "Order imbalance", "value": round(clamp((safe_float(snapshot.get("bid_ask_ratio")) + 100) / 2, 0, 100)), "detail": f"Futu 委比 / bid-ask imbalance {safe_float(snapshot.get('bid_ask_ratio')):.1f}%。"},
         {"name": "Price/volume velocity", "value": round(velocity), "detail": "结合价格波动、量比、换手率和基础关注度 / Combines price move, volume ratio, turnover, and baseline attention."},
-        {"name": "Social/news baseline", "value": round(social), "detail": "未覆盖平台仍用题材基线；Reddit 公开搜索会覆盖这部分 / Uncovered platforms use theme baseline; Reddit public search can override part of it."},
+        {"name": "Social/news baseline", "value": round(social), "detail": "未覆盖平台仍用题材基线；Reddit OAuth 或公开搜索会覆盖这部分 / Uncovered platforms use theme baseline; Reddit OAuth or public search can override part of it."},
     ]
     if reddit_social and reddit_social.get("connected"):
         signals.insert(0, {
-            "name": "Reddit public search",
+            "name": reddit_social.get("source") or "Reddit search",
             "value": reddit_social["score"],
             "detail": f"最近 7 天抓到 {reddit_social['posts']} 篇帖子、{reddit_social['comments']} 条评论，帖子分数约 {reddit_social['upvotes']} / Found {reddit_social['posts']} posts, {reddit_social['comments']} comments, and about {reddit_social['upvotes']} post score in the last 7 days.",
         })
@@ -2029,7 +2031,7 @@ def attention_model(ticker: str, snapshot: dict, profile: dict, price_context: d
         "reddit_social": reddit_social or {},
         "connectors": [
             {"name": "买卖盘 / Order book", "status": "planned", "needs": "Futu 订阅买卖盘用于委比/买卖盘失衡 / Futu order book subscription for bid-ask imbalance"},
-            {"name": "Reddit", "status": "connected" if reddit_social and reddit_social.get("connected") else "public limited", "needs": "当前用公开JSON搜索；限流后可加OAuth / Public JSON search now; OAuth can be added if Reddit rate-limits"},
+            {"name": "Reddit", "status": "connected" if reddit_social and reddit_social.get("connected") else "needs OAuth", "needs": "设置 REDDIT_CLIENT_ID、REDDIT_CLIENT_SECRET、REDDIT_USER_AGENT；未连接时不使用模拟数据 / Set REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, and REDDIT_USER_AGENT; no simulated data is used when unavailable"},
             {"name": "X", "status": "connected" if x_social and x_social.get("connected") else "needs key", "needs": "X_BEARER_TOKEN 用于 cashtag/recent search / Bearer token in X_BEARER_TOKEN for cashtag search"},
             {"name": "Google Trends", "status": "limited", "needs": "需要 Google Trends API alpha 权限 / Google Trends API alpha access"},
             {"name": "新闻情绪 / News sentiment", "status": "needs key", "needs": "需要新闻API监控情绪和负面新闻 / News provider API for sentiment and negative-news flags"},
@@ -2099,12 +2101,59 @@ def fetch_x_attention(ticker: str) -> tuple[dict, list[str]]:
         }, [f"X recent search unavailable: {exc.__class__.__name__}."]
 
 
+def get_reddit_oauth_token() -> tuple[str | None, str | None]:
+    client_id = os.environ.get("REDDIT_CLIENT_ID", "").strip()
+    client_secret = os.environ.get("REDDIT_CLIENT_SECRET", "").strip()
+    user_agent = os.environ.get("REDDIT_USER_AGENT", "").strip()
+    if not client_id or not client_secret or not user_agent:
+        return None, "REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, or REDDIT_USER_AGENT not set"
+
+    now = time.time()
+    if REDDIT_TOKEN_CACHE.get("token") and safe_float(REDDIT_TOKEN_CACHE.get("expires_at")) > now + 60:
+        return str(REDDIT_TOKEN_CACHE["token"]), None
+
+    auth_raw = f"{client_id}:{client_secret}".encode("utf-8")
+    auth_header = base64.b64encode(auth_raw).decode("ascii")
+    body = urllib.parse.urlencode({"grant_type": "client_credentials"}).encode("utf-8")
+    req = urllib.request.Request(
+        "https://www.reddit.com/api/v1/access_token",
+        data=body,
+        headers={
+            "Authorization": f"Basic {auth_header}",
+            "User-Agent": user_agent,
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        token = payload.get("access_token")
+        if not token:
+            return None, "Reddit OAuth did not return an access token"
+        REDDIT_TOKEN_CACHE["token"] = token
+        REDDIT_TOKEN_CACHE["expires_at"] = now + safe_float(payload.get("expires_in"), 3600)
+        return token, None
+    except urllib.error.HTTPError as exc:
+        return None, f"Reddit OAuth token HTTP {exc.code}"
+    except Exception as exc:
+        return None, f"Reddit OAuth token {exc.__class__.__name__}"
+
+
 def fetch_reddit_attention(ticker: str) -> tuple[dict, list[str]]:
     pattern = re.compile(rf"(?<![A-Z0-9])\$?{re.escape(ticker.upper())}(?![A-Z0-9])")
     posts = []
     errors = []
     successful_requests = 0
+    source = "Reddit public JSON"
     browser_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+    reddit_user_agent = os.environ.get("REDDIT_USER_AGENT", "").strip() or browser_user_agent
+    oauth_token, oauth_error = get_reddit_oauth_token()
+    if oauth_token:
+        source = "Reddit OAuth API"
+    elif oauth_error:
+        errors.append(oauth_error)
 
     def fetch_with_curl(url: str) -> dict | None:
         try:
@@ -2132,7 +2181,8 @@ def fetch_reddit_attention(ticker: str) -> tuple[dict, list[str]]:
         except Exception:
             return None
 
-    for subreddit in REDDIT_SUBREDDITS:
+    def request_listing(subreddit: str) -> dict | None:
+        nonlocal source
         params = urllib.parse.urlencode({
             "q": ticker,
             "restrict_sr": 1,
@@ -2140,6 +2190,26 @@ def fetch_reddit_attention(ticker: str) -> tuple[dict, list[str]]:
             "t": "week",
             "limit": 25,
         })
+        if oauth_token:
+            url = f"https://oauth.reddit.com/r/{subreddit}/search?{params}"
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "Authorization": f"Bearer {oauth_token}",
+                    "User-Agent": reddit_user_agent,
+                    "Accept": "application/json",
+                },
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=8) as response:
+                    return json.loads(response.read().decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                errors.append(f"OAuth r/{subreddit} HTTP {exc.code}")
+                return None
+            except Exception as exc:
+                errors.append(f"OAuth r/{subreddit} {exc.__class__.__name__}")
+                return None
+
         url = f"https://www.reddit.com/r/{subreddit}/search.json?{params}"
         req = urllib.request.Request(
             url,
@@ -2151,21 +2221,27 @@ def fetch_reddit_attention(ticker: str) -> tuple[dict, list[str]]:
         )
         try:
             with urllib.request.urlopen(req, timeout=7) as response:
-                payload = json.loads(response.read().decode("utf-8"))
-            successful_requests += 1
+                return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             payload = fetch_with_curl(url)
             if payload is None:
-                errors.append(f"r/{subreddit} HTTP {exc.code}")
-                continue
-            successful_requests += 1
+                errors.append(f"Public r/{subreddit} HTTP {exc.code}")
+                return None
+            source = "Reddit public JSON via curl"
+            return payload
         except Exception as exc:
             payload = fetch_with_curl(url)
             if payload is None:
-                errors.append(f"r/{subreddit} {exc.__class__.__name__}")
-                continue
-            successful_requests += 1
+                errors.append(f"Public r/{subreddit} {exc.__class__.__name__}")
+                return None
+            source = "Reddit public JSON via curl"
+            return payload
 
+    for subreddit in REDDIT_SUBREDDITS:
+        payload = request_listing(subreddit)
+        if payload is None:
+            continue
+        successful_requests += 1
         for child in payload.get("data", {}).get("children", []) or []:
             item = child.get("data", {}) or {}
             title = str(item.get("title") or "")
@@ -2188,13 +2264,16 @@ def fetch_reddit_attention(ticker: str) -> tuple[dict, list[str]]:
     if successful_requests == 0:
         return {
             "connected": False,
+            "source": source if oauth_token else "Reddit unavailable",
             "score": None,
             "posts": None,
             "comments": None,
             "upvotes": None,
             "top_posts": [],
-            "error": "; ".join(errors[:4]),
-        }, [f"Reddit public search unavailable: {'; '.join(errors[:4]) or 'unknown error'}."]
+            "daily": [],
+            "searched_subreddits": REDDIT_SUBREDDITS,
+            "error": "; ".join(errors[:5]),
+        }, [f"Reddit search unavailable: {'; '.join(errors[:5]) or 'unknown error'}."]
 
     total_comments = sum(item["comments"] for item in posts)
     total_score = sum(max(item["score"], 0) for item in posts)
@@ -2225,6 +2304,7 @@ def fetch_reddit_attention(ticker: str) -> tuple[dict, list[str]]:
 
     return {
         "connected": True,
+        "source": source,
         "score": round(heat),
         "posts": len(posts),
         "comments": total_comments,
@@ -2235,7 +2315,7 @@ def fetch_reddit_attention(ticker: str) -> tuple[dict, list[str]]:
         "top_posts": top_posts,
         "searched_subreddits": REDDIT_SUBREDDITS,
         "errors": errors[:4],
-    }, [f"Reddit public search connected across {successful_requests}/{len(REDDIT_SUBREDDITS)} subreddits."]
+    }, [f"{source} connected across {successful_requests}/{len(REDDIT_SUBREDDITS)} subreddits."]
 
 
 def risk_model(snapshot: dict, fin: dict, metrics: dict, profile: dict, valuation: dict) -> dict:

@@ -26,11 +26,12 @@ http://127.0.0.1:8765
 - Futu OpenD：如果本机 OpenD 可连接，会优先读取 `get_market_snapshot`
 - SEC EDGAR：已写入 companyfacts 读取逻辑；网络不可用时自动降级
 - FRED：设置 `FRED_API_KEY` 后会读取 2Y/10Y/Fed Funds
-- Reddit/X/Google Trends/News：第一版先显示连接器状态，后续接入 API token
+- Reddit：优先使用官方 OAuth API；需要在 Vercel 设置 `REDDIT_CLIENT_ID`、`REDDIT_CLIENT_SECRET`、`REDDIT_USER_AGENT`
+- X/Google Trends/News：显示连接器状态；X 需要 `X_BEARER_TOKEN` 且账户有 credits
 
 ## 说明
 
-当前估值结果是研究工具，不是投资建议。网络或 API 不可用时，页面会使用 deterministic fallback，让 UI 和模型逻辑保持可演示。
+当前估值结果是研究工具，不是投资建议。网络或 API 不可用时，页面会明确显示“无法获得 / unavailable”，不会用模拟数据冒充真实数据。
 
 ## Vercel 部署
 
@@ -40,7 +41,7 @@ http://127.0.0.1:8765
 - `api/analyze.py`：云端 `/api/analyze?ticker=...`
 - `vercel.json`：静态资源和 Python API 路由
 
-注意：部署到 Vercel 后，本机 Futu OpenD 无法在云端访问，行情会自动降级到 fallback 或其他公开数据源。`FRED_API_KEY`、`X_BEARER_TOKEN` 等需要在 Vercel 项目环境变量里单独设置。
+注意：部署到 Vercel 后，本机 Futu OpenD 无法在云端访问，行情会尝试 Yahoo/Nasdaq/SEC 等公开数据源；仍拿不到时会显示不可用。`FRED_API_KEY`、`X_BEARER_TOKEN`、Reddit OAuth 等需要在 Vercel 项目环境变量里单独设置。
 
 ### 从 GitHub 导入
 
@@ -53,5 +54,8 @@ http://127.0.0.1:8765
 推荐环境变量：
 
 - `FRED_API_KEY`：宏观利率数据
+- `REDDIT_CLIENT_ID`：Reddit App 的 client id
+- `REDDIT_CLIENT_SECRET`：Reddit App 的 secret
+- `REDDIT_USER_AGENT`：例如 `windows:stock-valuation-site:v1.0 (by u_yourname)`
 - `X_BEARER_TOKEN`：X recent search（如果账户有 credits）
 - `SEC_USER_AGENT`：SEC 请求标识，例如 `David stock dashboard your-email@example.com`
