@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <title>股票估值路由器 / Stock Valuation Router</title>
+    <link rel="stylesheet" href="/styles.css?v=ux-search-reddit-1" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="control-band">
+        <div>
+          <p class="eyebrow">股票估值路由器 / Stock Valuation Router</p>
+          <h1>股票画像、估值路由、市场热度和宏观政策雷达 / Stock profile, valuation router, attention and macro radar</h1>
+        </div>
+        <form id="searchForm" class="search-box">
+          <label for="tickerInput">股票代码 / Ticker</label>
+          <div class="search-row">
+            <input id="tickerInput" name="ticker" autocomplete="off" value="INTC" placeholder="AAPL / NVDA / INTC / US.FUTU" />
+            <button type="submit" title="分析股票 / Analyze stock">分析 / Analyze</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="status" class="status-band">正在准备模型 / Preparing model...</section>
+
+      <nav class="quick-nav" aria-label="页面模块导航 / Section navigation">
+        <a href="#valuationSection">估值 / Valuation</a>
+        <a href="#dcfSection">DCF</a>
+        <a href="#turnaroundSection">修复 / Turnaround</a>
+        <a href="#financialSection">财务 / Financials</a>
+        <a href="#attentionSection">热度 / Attention</a>
+        <a href="#macroSection">宏观 / Macro</a>
+        <a href="#riskSection">风险 / Risk</a>
+        <a href="#dataSection">数据 / Data</a>
+      </nav>
+
+      <section id="overview" class="overview-grid"></section>
+
+      <section class="main-grid">
+        <div id="valuationSection" class="wide-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">估值 / Valuation</p>
+              <h2>估值方法路由 / Valuation Method Router</h2>
+            </div>
+            <div id="fairValueBadge" class="value-badge"></div>
+          </div>
+          <div id="valuationRange" class="range-track"></div>
+          <div id="methods" class="method-list"></div>
+        </div>
+
+        <aside id="riskSection" class="side-panel">
+          <p class="eyebrow">风险 / Risk</p>
+          <h2>风险红旗 / Risk Flags</h2>
+          <div id="risks" class="risk-list"></div>
+        </aside>
+      </section>
+
+      <section id="dcfSection" class="wide-panel dcf-lab">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">DCF 实验室 / DCF Lab</p>
+            <h2>自由现金流折现计算器 / Free Cash Flow DCF Calculator</h2>
+          </div>
+          <div id="dcfBadge" class="value-badge"></div>
+        </div>
+        <div id="dcfLab"></div>
+      </section>
+
+      <section id="turnaroundSection" class="wide-panel turnaround-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">拐点修复 / Turnaround</p>
+            <h2>负PE/负FCF修复评分 / Negative PE or FCF Recovery Score</h2>
+          </div>
+          <div id="turnaroundBadge" class="value-badge"></div>
+        </div>
+        <div id="turnaround"></div>
+      </section>
+
+      <section class="detail-grid">
+        <div id="financialSection" class="panel">
+          <p class="eyebrow">财务质量 / Financial Quality</p>
+          <h2>关键财务指标 / Key Financial Metrics</h2>
+          <div class="trend-controls">
+            <select id="metricSelect" title="选择财务指标 / Choose financial metric">
+              <option value="revenue">营收 / Revenue</option>
+              <option value="gross_profit">毛利润 / Gross Profit</option>
+              <option value="net_income">净利润 / Net Income</option>
+              <option value="eps">每股收益 / EPS</option>
+              <option value="operating_cash_flow">经营现金流 / Operating Cash Flow</option>
+              <option value="capex">资本开支 / Capex</option>
+            </select>
+            <select id="rangeSelect" title="选择时间范围 / Choose time range">
+              <option value="8">8季 / 8Q</option>
+              <option value="12">12季 / 12Q</option>
+              <option value="16">16季 / 16Q</option>
+            </select>
+          </div>
+          <div id="financialTrend" class="trend-chart"></div>
+          <div id="financialMetrics" class="metric-list"></div>
+        </div>
+
+        <div id="guidanceSection" class="panel">
+          <p class="eyebrow">未来指引 / Guidance</p>
+          <h2>未来指引 / Forward Guidance</h2>
+          <div id="guidance" class="metric-list"></div>
+        </div>
+
+        <div id="attentionSection" class="panel">
+          <p class="eyebrow">市场热度 / Attention</p>
+          <h2>市场热度 / Market Attention</h2>
+          <div id="attention" class="metric-list"></div>
+        </div>
+
+        <div id="macroSection" class="panel">
+          <p class="eyebrow">宏观与政策 / Macro & Policy</p>
+          <h2>宏观政策暴露 / Macro & Policy Exposure</h2>
+          <div id="macro" class="metric-list"></div>
+        </div>
+      </section>
+
+      <section id="dataSection" class="panel">
+        <p class="eyebrow">数据管道 / Data Pipeline</p>
+        <h2>数据源状态 / Data Source Status</h2>
+        <div id="notes" class="notes"></div>
+      </section>
+    </main>
+
+    <script src="/app.js?v=ux-search-reddit-1"></script>
+  </body>
+</html>
