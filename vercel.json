@@ -1,5 +1,10 @@
 {
   "version": 2,
+  "functions": {
+    "api/analyze.py": {
+      "maxDuration": 60
+    }
+  },
   "builds": [
     {
       "src": "api/analyze.py",

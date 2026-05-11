@@ -41,3 +41,17 @@ http://127.0.0.1:8765
 - `vercel.json`：静态资源和 Python API 路由
 
 注意：部署到 Vercel 后，本机 Futu OpenD 无法在云端访问，行情会自动降级到 fallback 或其他公开数据源。`FRED_API_KEY`、`X_BEARER_TOKEN` 等需要在 Vercel 项目环境变量里单独设置。
+
+### 从 GitHub 导入
+
+1. 打开 <https://vercel.com/new>
+2. 选择 GitHub 仓库 `sdqsdqsdqzhu-source/stock-valuation-site`
+3. Framework Preset 选择 `Other`
+4. 保持 Build Command / Output Directory 默认即可，项目使用 `vercel.json`
+5. 点击 Deploy
+
+推荐环境变量：
+
+- `FRED_API_KEY`：宏观利率数据
+- `X_BEARER_TOKEN`：X recent search（如果账户有 credits）
+- `SEC_USER_AGENT`：SEC 请求标识，例如 `David stock dashboard your-email@example.com`
