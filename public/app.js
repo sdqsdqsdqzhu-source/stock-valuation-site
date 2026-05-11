@@ -254,6 +254,10 @@ function miniChange(label, value) {
 
 function renderOverview(data) {
   const profileTags = data.profile.traits.map((tag) => `<span class="chip">${traitLabel(tag)}</span>`).join("");
+  const sourceText = String(data.snapshot.source || "");
+  const sourceHint = sourceText.includes("fallback")
+    ? `${sourceText} · 模拟兜底数据，请勿作为交易依据 / simulated fallback, not trading data`
+    : sourceText;
   const priceHint = `
     <div class="price-changes">
       ${miniChange("日 / Day", data.price_context.day_change)}
@@ -281,7 +285,7 @@ function renderOverview(data) {
         <span>${bi(data.summary.label)}</span>
       </div>
     </article>
-    ${stat("当前价格", money(data.snapshot.price), `${data.snapshot.source}${priceHint}`)}
+    ${stat("当前价格", money(data.snapshot.price), `${sourceHint}${priceHint}`)}
     ${stat("市值", money(data.snapshot.market_cap), "Market cap")}
     ${stat("Forward PE", ratio(data.valuation.forward_pe, 1), `模型预期估值 / Model forward estimate · Futu TTM/动态PE ${ratio(data.snapshot.pe_ttm || data.snapshot.pe, 1)}`)}
     ${stat("综合合理价", money(data.valuation.fair_value), `${data.valuation.upside}% vs current / 相对当前价格`)}

@@ -12,7 +12,7 @@ import urllib.request
 import urllib.error
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 
 ROOT = Path(__file__).resolve().parent
@@ -414,6 +414,75 @@ def get_futu_snapshot(code: str) -> tuple[dict, list[str]]:
         return {}, notes
 
 
+def yahoo_symbol(ticker: str) -> str:
+    return ticker.split(".")[-1].replace("-", "-").upper()
+
+
+def yahoo_chart(ticker: str, range_: str = "5d", interval: str = "1d") -> dict:
+    params = urllib.parse.urlencode({"range": range_, "interval": interval})
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yahoo_symbol(ticker)}?{params}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"})
+    with urllib.request.urlopen(req, timeout=8) as response:
+        data = json.loads(response.read().decode("utf-8"))
+    result = ((data.get("chart") or {}).get("result") or [])
+    return result[0] if result else {}
+
+
+def yahoo_quote_points(chart: dict) -> list[dict]:
+    timestamps = chart.get("timestamp") or []
+    quote = (((chart.get("indicators") or {}).get("quote") or [{}])[0]) or {}
+    closes = quote.get("close") or []
+    volumes = quote.get("volume") or []
+    points = []
+    for idx, ts in enumerate(timestamps):
+        close = safe_float(closes[idx] if idx < len(closes) else None)
+        if close <= 0:
+            continue
+        points.append({
+            "date": datetime.fromtimestamp(ts).strftime("%Y-%m-%d"),
+            "close": close,
+            "volume": safe_float(volumes[idx] if idx < len(volumes) else None),
+        })
+    return points
+
+
+def get_yahoo_snapshot(ticker: str) -> tuple[dict, list[str]]:
+    try:
+        chart = yahoo_chart(ticker, "5d", "1d")
+        meta = chart.get("meta") or {}
+        points = yahoo_quote_points(chart)
+        price = safe_float(meta.get("regularMarketPrice")) or (points[-1]["close"] if points else 0)
+        if price <= 0:
+            return {}, [f"Yahoo Finance chart returned no usable price for {ticker}."]
+        prev_close = points[-2]["close"] if len(points) >= 2 else safe_float(meta.get("chartPreviousClose"))
+        volume = safe_float(meta.get("regularMarketVolume")) or (points[-1]["volume"] if points else 0)
+        return {
+            "code": f"US.{yahoo_symbol(ticker)}",
+            "name": meta.get("longName") or meta.get("shortName") or ticker,
+            "price": price,
+            "prev_close_price": prev_close,
+            "market_cap": 0,
+            "pe": 0,
+            "pe_ttm": 0,
+            "pb": 0,
+            "ey_ratio": 0,
+            "eps": 0,
+            "book_per_share": 0,
+            "volume": volume,
+            "turnover_rate": 0,
+            "volume_ratio": 0,
+            "bid_ask_ratio": 0,
+            "day_high": safe_float(meta.get("regularMarketDayHigh")),
+            "day_low": safe_float(meta.get("regularMarketDayLow")),
+            "fifty_two_week_high": safe_float(meta.get("fiftyTwoWeekHigh")),
+            "fifty_two_week_low": safe_float(meta.get("fiftyTwoWeekLow")),
+            "regular_market_time": meta.get("regularMarketTime"),
+            "source": "Yahoo Finance chart",
+        }, ["Yahoo Finance chart snapshot connected."]
+    except Exception as exc:
+        return {}, [f"Yahoo Finance chart snapshot unavailable: {exc.__class__.__name__}."]
+
+
 def get_futu_price_context(code: str, current_price: float, prev_close_price: float = 0) -> tuple[dict, list[str]]:
     notes = []
     try:
@@ -471,7 +540,47 @@ def get_futu_price_context(code: str, current_price: float, prev_close_price: fl
             ctx.close()
     except Exception as exc:
         fallback = fallback_price_context(code, current_price, prev_close_price)
-        return fallback, [f"Futu historical K-line unavailable: {exc.__class__.__name__}; using fallback price context."]
+        return fallback, [f"Futu historical K-line unavailable: {exc.__class__.__name__}."]
+
+
+def get_yahoo_price_context(ticker: str, current_price: float, prev_close_price: float = 0) -> tuple[dict, list[str]]:
+    try:
+        chart = yahoo_chart(ticker, "3mo", "1d")
+        points = yahoo_quote_points(chart)
+        if not points:
+            return {}, [f"Yahoo Finance chart history returned no closes for {ticker}."]
+        closes = [point["close"] for point in points]
+        volumes = [point["volume"] for point in points]
+        price = current_price or closes[-1]
+
+        def ref(days: int) -> float:
+            idx = max(0, len(closes) - 1 - days)
+            return closes[idx]
+
+        prev = prev_close_price if prev_close_price > 0 else (closes[-2] if len(closes) >= 2 else ref(1))
+        avg_5 = sum(volumes[-5:]) / min(len(volumes), 5) if volumes else 0
+        avg_20 = sum(volumes[-20:]) / min(len(volumes), 20) if volumes else 0
+        avg_60 = sum(volumes[-60:]) / min(len(volumes), 60) if volumes else 0
+        return {
+            "previous_close": prev,
+            "week_ago": ref(5),
+            "month_ago": ref(21),
+            "quarter_ago": ref(63),
+            "latest_close": price,
+            "day_change": pct_change(price, prev),
+            "week_change": pct_change(price, ref(5)),
+            "month_change": pct_change(price, ref(21)),
+            "quarter_change": pct_change(price, ref(63)),
+            "avg_volume_5d": avg_5,
+            "avg_volume_20d": avg_20,
+            "avg_volume_60d": avg_60,
+            "volume_ratio": (volumes[-1] / avg_20) if avg_20 else 0,
+            "volume_trend": (avg_5 / avg_20) if avg_20 else 0,
+            "history": points[-90:],
+            "source": "Yahoo Finance chart",
+        }, ["Yahoo Finance chart history connected."]
+    except Exception as exc:
+        return {}, [f"Yahoo Finance chart history unavailable: {exc.__class__.__name__}."]
 
 
 def pct_change(current: float, previous: float) -> float | None:
@@ -947,6 +1056,37 @@ def fallback_financials(ticker: str, snapshot: dict, profile: dict) -> dict:
     }
 
 
+def enrich_snapshot_with_financials(snapshot: dict, fin: dict) -> list[str]:
+    notes = []
+    price = safe_float(snapshot.get("price"))
+    shares = safe_float(fin.get("shares")) or safe_float(snapshot.get("outstanding_shares"))
+    eps_points = fin.get("trends", {}).get("eps", []) or []
+    eps_ttm = sum(safe_float(row.get("value")) for row in eps_points[-4:]) if len(eps_points) >= 4 else 0
+    if eps_ttm:
+        fin["eps_ttm"] = eps_ttm
+    eps = safe_float(snapshot.get("eps")) or eps_ttm or safe_float(fin.get("eps"))
+    equity = safe_float(fin.get("equity"))
+    market_cap = safe_float(snapshot.get("market_cap"))
+    if price > 0 and shares > 0 and market_cap <= 0:
+        snapshot["market_cap"] = price * shares
+        notes.append("Market cap estimated from live price and SEC diluted shares.")
+    if eps and safe_float(snapshot.get("eps")) <= 0:
+        snapshot["eps"] = eps
+        snapshot["pe"] = price / eps if price and eps else 0
+        snapshot["pe_ttm"] = snapshot["pe"]
+        snapshot["ey_ratio"] = eps / price * 100 if price else 0
+        notes.append("PE/EPS filled from SEC TTM EPS and live price." if eps_ttm else "PE/EPS filled from SEC latest EPS and live price.")
+    if equity > 0 and shares > 0:
+        book_per_share = equity / shares
+        if book_per_share > 0 and safe_float(snapshot.get("book_per_share")) <= 0:
+            snapshot["book_per_share"] = book_per_share
+            snapshot["pb"] = price / book_per_share if price else 0
+            notes.append("P/B filled from SEC equity and diluted shares.")
+    if notes and "Yahoo Finance chart" in str(snapshot.get("source", "")):
+        snapshot["source"] = "Yahoo Finance chart + SEC filings"
+    return notes
+
+
 def fallback_trends(revenue: float, net_income: float, ocf: float, capex: float, growth: float) -> dict:
     today = date.today()
     points = []
@@ -1135,7 +1275,7 @@ def valuation_methods(ticker: str, snapshot: dict, fin: dict, profile: dict, mac
     sector_model = SECTOR_DEFAULTS.get(profile["sector"], SECTOR_DEFAULTS["default"])
     price = max(snapshot["price"], 0.01)
     shares = max(fin["shares"] or snapshot.get("outstanding_shares") or snapshot["market_cap"] / price, 1)
-    raw_eps = fin.get("eps") if fin.get("eps") not in (None, 0) else snapshot.get("eps")
+    raw_eps = fin.get("eps_ttm") or fin.get("eps") or snapshot.get("eps")
     eps = safe_float(raw_eps)
     if eps <= 0 and fin["net_income"] > 0:
         eps = fin["net_income"] / shares
@@ -2155,10 +2295,20 @@ def analyze(raw_ticker: str) -> dict:
     snapshot, futu_notes = get_futu_snapshot(code)
     notes.extend(futu_notes)
     if not snapshot or snapshot.get("price", 0) <= 0:
-        snapshot = fallback_snapshot(ticker, profile)
-        notes.append("Using deterministic snapshot fallback.")
+        yahoo_snapshot, yahoo_notes = get_yahoo_snapshot(ticker)
+        notes.extend(yahoo_notes)
+        if yahoo_snapshot and yahoo_snapshot.get("price", 0) > 0:
+            snapshot = yahoo_snapshot
+        else:
+            snapshot = fallback_snapshot(ticker, profile)
+            notes.append("Using deterministic snapshot fallback.")
     price_context, price_notes = get_futu_price_context(snapshot.get("code", code), snapshot.get("price", 0), snapshot.get("prev_close_price", 0))
     notes.extend(price_notes)
+    if price_context.get("source") == "model fallback":
+        yahoo_context, yahoo_context_notes = get_yahoo_price_context(ticker, snapshot.get("price", 0), snapshot.get("prev_close_price", 0))
+        notes.extend(yahoo_context_notes)
+        if yahoo_context:
+            price_context = yahoo_context
 
     sec_fin, sec_notes = get_sec_financials(ticker)
     notes.extend(sec_notes)
@@ -2169,6 +2319,7 @@ def analyze(raw_ticker: str) -> dict:
         sec_fin["eps"] = snapshot["eps"]
     notes.extend(enrich_with_yahoo_quarterly(ticker, sec_fin))
     notes.extend(apply_official_earnings_overlay(ticker, sec_fin))
+    notes.extend(enrich_snapshot_with_financials(snapshot, sec_fin))
 
     macro, macro_notes = macro_regime()
     notes.extend(macro_notes)
