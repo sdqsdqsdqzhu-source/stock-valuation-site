@@ -32,6 +32,15 @@ REDDIT_SUBREDDITS = [
 REDDIT_TOKEN_CACHE = {"token": None, "expires_at": 0.0}
 REDDIT_CACHE_PATH = PUBLIC / "data" / "reddit_cache.json"
 SEC_TICKER_CACHE = {"loaded": False, "map": {}}
+FX_RATE_CACHE: dict[str, float | None] = {}
+ISO_CURRENCIES = {
+    "USD", "TWD", "GBP", "EUR", "JPY", "HKD", "CNY", "CAD", "AUD", "CHF",
+    "SEK", "DKK", "NOK", "KRW", "SGD", "INR", "BRL", "MXN", "ZAR",
+}
+ADR_ORDINARY_SHARE_RATIO = {
+    "TSM": 5.0,  # one NYSE ADS represents five ordinary shares
+    "BCS": 4.0,  # one NYSE ADS represents four ordinary shares
+}
 
 
 CIK_BY_TICKER = {
@@ -76,6 +85,11 @@ LOGO_DOMAINS = {
     "XOM": "exxonmobil.com",
     "WMT": "walmart.com",
     "SOFI": "sofi.com",
+    "TSM": "tsmc.com",
+    "BCS": "barclays.com",
+    "ADDYY": "adidas-group.com",
+    "LVMUY": "lvmh.com",
+    "LVMHF": "lvmh.com",
 }
 
 OFFICIAL_EARNINGS = {
@@ -157,6 +171,26 @@ TICKER_ALIASES = {
     "FUTU": "FUTU",
     "SOFI": "SOFI",
     "SOFI TECHNOLOGIES": "SOFI",
+    "TSM": "TSM",
+    "TSMC": "TSM",
+    "TAIWAN SEMICONDUCTOR": "TSM",
+    "台积电": "TSM",
+    "台積電": "TSM",
+    "BCS": "BCS",
+    "BARCLAYS": "BCS",
+    "巴克莱": "BCS",
+    "巴克萊": "BCS",
+    "ADDYY": "ADDYY",
+    "ADIDAS": "ADDYY",
+    "阿迪达斯": "ADDYY",
+    "阿迪達斯": "ADDYY",
+    "LVMH": "LVMUY",
+    "LVMUY": "LVMUY",
+    "LVMHF": "LVMHF",
+    "路威酩轩": "LVMUY",
+    "路威酩軒": "LVMUY",
+    "酩悦轩尼诗": "LVMUY",
+    "酩悅軒尼詩": "LVMUY",
 }
 
 
@@ -224,6 +258,46 @@ PROFILES = {
         "growth": 0.30,
         "attention": 86,
         "risk": ["credit cycle", "funding cost", "regulatory scrutiny", "private-credit sentiment"],
+    },
+    "TSM": {
+        "sector": "Semiconductors",
+        "industry": "Foundry / Advanced nodes",
+        "traits": ["mega_cap", "quality", "ai", "china_exposure", "geopolitical"],
+        "growth": 0.15,
+        "attention": 78,
+        "risk": ["Taiwan geopolitics", "AI capex cycle", "currency translation"],
+    },
+    "BCS": {
+        "sector": "Financials",
+        "industry": "Global banking",
+        "traits": ["financial", "rate_sensitive", "cyclical", "foreign_currency"],
+        "growth": 0.04,
+        "attention": 42,
+        "risk": ["UK rates", "credit cycle", "GBP/USD translation"],
+    },
+    "ADDYY": {
+        "sector": "Consumer Cyclical",
+        "industry": "Athletic apparel",
+        "traits": ["consumer", "cyclical", "foreign_currency", "turnaround"],
+        "growth": 0.08,
+        "attention": 45,
+        "risk": ["brand momentum", "inventory cycle", "EUR/USD translation"],
+    },
+    "LVMUY": {
+        "sector": "Consumer Cyclical",
+        "industry": "Luxury goods",
+        "traits": ["quality", "consumer", "china_exposure", "foreign_currency"],
+        "growth": 0.07,
+        "attention": 52,
+        "risk": ["China luxury demand", "EUR/USD translation", "consumer slowdown"],
+    },
+    "LVMHF": {
+        "sector": "Consumer Cyclical",
+        "industry": "Luxury goods",
+        "traits": ["quality", "consumer", "china_exposure", "foreign_currency"],
+        "growth": 0.07,
+        "attention": 45,
+        "risk": ["China luxury demand", "EUR/USD translation", "OTC liquidity"],
     },
     "TSLA": {
         "sector": "Autos / Energy",
@@ -658,6 +732,82 @@ def sec_request(url: str) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
+def json_request(url: str, timeout: int = 8) -> dict:
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"})
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def split_unit_currency(unit_name: str) -> tuple[str | None, str]:
+    unit = str(unit_name or "")
+    if not unit:
+        return None, ""
+    base, sep, suffix = unit.partition("/")
+    base = base.upper()
+    if base in ISO_CURRENCIES:
+        return base, f"{sep}{suffix}" if sep else ""
+    return None, unit
+
+
+def fx_to_usd(currency: str) -> float | None:
+    currency = (currency or "USD").upper()
+    if currency == "USD":
+        return 1.0
+    if currency in FX_RATE_CACHE:
+        return FX_RATE_CACHE[currency]
+    override = safe_float(os.environ.get(f"FX_{currency}_USD"), None)
+    if override:
+        FX_RATE_CACHE[currency] = override
+        return override
+    urls = [
+        f"https://open.er-api.com/v6/latest/{urllib.parse.quote(currency)}",
+        f"https://api.exchangerate-api.com/v4/latest/{urllib.parse.quote(currency)}",
+    ]
+    for url in urls:
+        try:
+            data = json_request(url, timeout=6)
+            rates = data.get("rates", {})
+            rate = safe_float(rates.get("USD"), None)
+            if rate:
+                FX_RATE_CACHE[currency] = rate
+                return rate
+        except Exception:
+            continue
+    FX_RATE_CACHE[currency] = None
+    return None
+
+
+def normalize_fact_row_currency(row: dict, unit_name: str) -> dict | None:
+    currency, suffix = split_unit_currency(unit_name)
+    item = dict(row)
+    item["original_unit"] = unit_name
+    if not currency:
+        item["unit"] = unit_name
+        return item
+    rate = fx_to_usd(currency)
+    if not rate:
+        return None
+    value = safe_float(item.get("val"), None)
+    if value is None:
+        return None
+    item["val"] = value * rate
+    item["unit"] = f"USD{suffix}"
+    item["source_currency"] = currency
+    item["fx_rate_to_usd"] = rate
+    return item
+
+
+def reporting_currencies(facts: dict) -> list[str]:
+    found = set()
+    for taxonomy in ("us-gaap", "ifrs-full"):
+        for item in facts.get("facts", {}).get(taxonomy, {}).values():
+            for unit_name in item.get("units", {}).keys():
+                currency, _suffix = split_unit_currency(unit_name)
+                if currency and currency != "USD":
+                    found.add(currency)
+    return sorted(found)
+
+
 def get_sec_cik(ticker: str) -> tuple[str | None, str]:
     ticker = ticker.upper().strip()
     if ticker in CIK_BY_TICKER:
@@ -713,6 +863,55 @@ def yahoo_quarterly_request(ticker: str) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
+def yahoo_annual_request(ticker: str) -> dict:
+    types = [
+        "annualTotalRevenue",
+        "annualGrossProfit",
+        "annualNetIncome",
+        "annualDilutedEPS",
+        "annualOperatingIncome",
+        "annualOperatingCashFlow",
+        "annualCapitalExpenditure",
+        "annualTotalAssets",
+        "annualTotalLiabilitiesNetMinorityInterest",
+        "annualStockholdersEquity",
+        "annualCashAndCashEquivalents",
+        "annualTotalDebt",
+        "trailingTotalRevenue",
+        "trailingNetIncome",
+        "trailingDilutedEPS",
+    ]
+    params = urllib.parse.urlencode({
+        "lang": "en-US",
+        "region": "US",
+        "symbol": ticker,
+        "padTimeSeries": "true",
+        "type": ",".join(types),
+        "merge": "false",
+        "period1": "0",
+        "period2": str(int(time.time()) + 86400),
+        "corsDomain": "finance.yahoo.com",
+    })
+    url = f"https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{ticker}?{params}"
+    return json_request(url, timeout=8)
+
+
+def yahoo_reported_value(row: dict) -> tuple[float | None, str | None, float | None]:
+    reported = row.get("reportedValue") if isinstance(row, dict) else {}
+    if not isinstance(reported, dict):
+        return None, None, None
+    value = safe_float(reported.get("raw"), None)
+    if value is None:
+        return None, None, None
+    currency = str(row.get("currencyCode") or "USD").upper()
+    if currency and currency != "USD":
+        rate = fx_to_usd(currency)
+        if not rate:
+            return None, currency, None
+        return value * rate, currency, rate
+    return value, currency or "USD", 1.0
+
+
 def enrich_with_yahoo_quarterly(ticker: str, fin: dict) -> list[str]:
     mapping = {
         "quarterlyTotalRevenue": "revenue",
@@ -729,7 +928,12 @@ def enrich_with_yahoo_quarterly(ticker: str, fin: dict) -> list[str]:
     }
     try:
         data = yahoo_quarterly_request(ticker)
-        results = data.get("timeseries", {}).get("result", [])
+        timeseries = data.get("timeseries") if isinstance(data, dict) else {}
+        if not isinstance(timeseries, dict):
+            return ["Yahoo Finance quarterly fundamentals returned an unsupported response shape."]
+        results = timeseries.get("result", [])
+        if not isinstance(results, list):
+            return ["Yahoo Finance quarterly fundamentals returned no usable fields."]
         found = 0
         for block in results:
             for yahoo_key, local_key in mapping.items():
@@ -738,7 +942,10 @@ def enrich_with_yahoo_quarterly(ticker: str, fin: dict) -> list[str]:
                     continue
                 series = []
                 for row in rows:
-                    value = safe_float(row.get("reportedValue", {}).get("raw"), None)
+                    reported = row.get("reportedValue") if isinstance(row, dict) else {}
+                    if not isinstance(reported, dict):
+                        continue
+                    value = safe_float(reported.get("raw"), None)
                     if value is None:
                         continue
                     series.append({
@@ -770,16 +977,128 @@ def enrich_with_yahoo_quarterly(ticker: str, fin: dict) -> list[str]:
         return [f"Yahoo Finance quarterly fundamentals unavailable: {exc.__class__.__name__}."]
 
 
+def enrich_with_yahoo_annual(ticker: str, fin: dict) -> list[str]:
+    mapping = {
+        "annualTotalRevenue": "revenue",
+        "annualGrossProfit": "gross_profit",
+        "annualNetIncome": "net_income",
+        "annualDilutedEPS": "eps",
+        "annualOperatingIncome": "operating_income",
+        "annualOperatingCashFlow": "operating_cash_flow",
+        "annualCapitalExpenditure": "capex",
+        "annualTotalAssets": "assets",
+        "annualTotalLiabilitiesNetMinorityInterest": "liabilities",
+        "annualStockholdersEquity": "equity",
+        "annualCashAndCashEquivalents": "cash",
+        "annualTotalDebt": "total_debt",
+    }
+    trailing_mapping = {
+        "trailingTotalRevenue": "revenue",
+        "trailingNetIncome": "net_income",
+        "trailingDilutedEPS": "eps",
+    }
+    try:
+        data = yahoo_annual_request(ticker)
+        timeseries = data.get("timeseries") if isinstance(data, dict) else {}
+        if not isinstance(timeseries, dict):
+            return ["Yahoo Finance annual fundamentals returned an unsupported response shape."]
+        results = timeseries.get("result", [])
+        if not isinstance(results, list):
+            return ["Yahoo Finance annual fundamentals returned no usable fields."]
+        found = 0
+        currencies = set()
+        latest_dates = []
+        for block in results:
+            for yahoo_key, local_key in mapping.items():
+                rows = block.get(yahoo_key)
+                if not isinstance(rows, list):
+                    continue
+                series = []
+                for row in rows:
+                    value, currency, _rate = yahoo_reported_value(row)
+                    if value is None:
+                        continue
+                    if currency and currency != "USD":
+                        currencies.add(currency)
+                    series.append({
+                        "date": row.get("asOfDate") or "",
+                        "filed": row.get("asOfDate") or "",
+                        "fy": None,
+                        "fp": "FY",
+                        "frame": row.get("asOfDate") or "",
+                        "value": abs(value) if local_key == "capex" else value,
+                        "form": "Yahoo Finance annual",
+                        "tag": yahoo_key,
+                    })
+                    if row.get("asOfDate"):
+                        latest_dates.append(row.get("asOfDate"))
+                series = sorted(series, key=lambda x: x.get("date") or "")[-8:]
+                if series and (not fin.get("trends", {}).get(local_key) or len(fin.get("trends", {}).get(local_key, [])) < 2):
+                    fin.setdefault("trends", {})[local_key] = series
+                    found += 1
+                if series:
+                    current_value = safe_float(series[-1].get("value"))
+                    if current_value or safe_float(fin.get(local_key)) <= 0:
+                        fin[local_key] = current_value
+        for block in results:
+            for yahoo_key, local_key in trailing_mapping.items():
+                rows = block.get(yahoo_key)
+                if not isinstance(rows, list) or not rows:
+                    continue
+                last = sorted(rows, key=lambda x: x.get("asOfDate") or "")[-1]
+                value, currency, _rate = yahoo_reported_value(last)
+                if value is None:
+                    continue
+                if currency and currency != "USD":
+                    currencies.add(currency)
+                if value or safe_float(fin.get(local_key)) <= 0:
+                    fin[local_key] = value
+                    latest_dates.append(last.get("asOfDate") or "")
+                    found += 1
+        if safe_float(fin.get("operating_cash_flow")) and safe_float(fin.get("capex")):
+            fin["free_cash_flow"] = safe_float(fin.get("operating_cash_flow")) - abs(safe_float(fin.get("capex")))
+        if safe_float(fin.get("net_income")) > 0 and safe_float(fin.get("eps")) > 0 and safe_float(fin.get("shares")) <= 0:
+            fin["shares"] = safe_float(fin.get("net_income")) / safe_float(fin.get("eps"))
+        if safe_float(fin.get("assets")) > 0 and safe_float(fin.get("liabilities")) <= 0 and safe_float(fin.get("equity")) > 0:
+            fin["liabilities"] = safe_float(fin.get("assets")) - safe_float(fin.get("equity"))
+        if found:
+            fin["available"] = True
+            fin["source"] = "Yahoo Finance annual/TTM fundamentals (USD-normalized)"
+            last_date = max([value for value in latest_dates if value], default="N/A")
+            fin["latest_report"] = {
+                "form": "Yahoo Finance annual/TTM",
+                "period_end": last_date,
+                "filed": last_date,
+                "fiscal_period": "FY/TTM",
+                "fiscal_year": last_date[:4] if last_date != "N/A" else "N/A",
+            }
+            fin["changes"] = {key: series_change(value) for key, value in fin.get("trends", {}).items()}
+            fin["guidance"] = build_guidance_watchlist(ticker, fin.get("changes", {}))
+            note = f"Yahoo Finance annual/TTM fundamentals connected for {found} fields."
+            if currencies:
+                note += f" Converted to USD from: {', '.join(sorted(currencies))}."
+            return [note]
+        return ["Yahoo Finance annual/TTM fundamentals returned no usable fields."]
+    except Exception as exc:
+        return [f"Yahoo Finance annual/TTM fundamentals unavailable: {exc.__class__.__name__}."]
+
+
 def fact_units(facts: dict, tag: str) -> list[dict]:
+    rows = []
     for taxonomy in ("us-gaap", "ifrs-full"):
         item = facts.get("facts", {}).get(taxonomy, {}).get(tag)
         if not item:
             continue
         units = item.get("units", {})
-        for unit_name in ("USD", "USD/shares", "shares", "pure"):
-            if unit_name in units:
-                return units[unit_name]
-    return []
+        priority_units = ["USD", "USD/shares", "shares", "pure"]
+        ordered_units = [unit_name for unit_name in priority_units if unit_name in units]
+        ordered_units.extend(unit_name for unit_name in units.keys() if unit_name not in ordered_units)
+        for unit_name in ordered_units:
+            for row in units.get(unit_name, []):
+                item_row = normalize_fact_row_currency(row, unit_name)
+                if item_row is not None:
+                    rows.append(item_row)
+    return rows
 
 
 def latest_fact(facts: dict, tags: list[str], forms=("10-K", "10-Q", "20-F", "40-F")) -> float:
@@ -935,23 +1254,78 @@ def annual_growth(facts: dict, tags: list[str]) -> float:
     return clamp((clean[0] / clean[1]) - 1, -0.8, 1.5)
 
 
+def adjust_for_adr_ratio(ticker: str, fin: dict) -> list[str]:
+    ratio = ADR_ORDINARY_SHARE_RATIO.get(ticker)
+    shares = safe_float(fin.get("shares"))
+    if not ratio or shares <= 0:
+        return []
+    fin["ordinary_share_ratio_per_adr"] = ratio
+    fin["ordinary_shares_reported"] = shares
+    fin["shares"] = shares / ratio
+    if safe_float(fin.get("eps")):
+        fin["eps"] = safe_float(fin.get("eps")) * ratio
+    for row in fin.get("trends", {}).get("eps", []) or []:
+        row["value"] = safe_float(row.get("value")) * ratio
+        row["tag"] = f"{row.get('tag', 'EPS')} adjusted to ADS"
+    return [f"ADR share ratio applied for {ticker}: one ADS represents {ratio:g} ordinary shares; share count and EPS normalized to ADS basis."]
+
+
 def get_sec_financials(ticker: str) -> tuple[dict, list[str]]:
     cik, cik_source = get_sec_cik(ticker)
     if not cik:
         return {}, ["SEC CIK unavailable for this ticker."]
     try:
         facts = sec_request(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json")
-        revenue_tags = ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues", "SalesRevenueNet"]
-        net_income_tags = ["NetIncomeLoss", "ProfitLoss"]
-        ocf_tags = ["NetCashProvidedByUsedInOperatingActivities"]
-        capex_tags = ["PaymentsToAcquirePropertyPlantAndEquipment"]
-        cost_revenue_tags = ["CostOfRevenue", "CostOfGoodsAndServicesSold", "CostOfGoodsAndServiceExcludingDepreciationDepletionAndAmortization"]
-        cash_tags = ["CashAndCashEquivalentsAtCarryingValue", "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents", "CashCashEquivalentsAndShortTermInvestments"]
-        debt_current_tags = ["ShortTermBorrowings", "LongTermDebtAndFinanceLeaseObligationsCurrent", "LongTermDebtCurrent", "CurrentPortionOfLongTermDebt"]
-        debt_long_tags = ["LongTermDebtAndFinanceLeaseObligationsNoncurrent", "LongTermDebtNoncurrent", "LongTermDebt"]
-        interest_tags = ["InterestExpenseNonOperating", "InterestExpense"]
-        pretax_tags = ["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest", "IncomeLossFromContinuingOperationsBeforeIncomeTaxes", "IncomeBeforeIncomeTaxes"]
-        tax_tags = ["IncomeTaxExpenseBenefit"]
+        currencies = reporting_currencies(facts)
+        revenue_tags = [
+            "RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues", "SalesRevenueNet",
+            "Revenue", "RevenueFromContractsWithCustomers", "RevenueFromSaleOfGoods",
+            "InterestRevenueCalculatedUsingEffectiveInterestMethod", "RevenueFromInterest",
+        ]
+        net_income_tags = [
+            "NetIncomeLoss", "ProfitLoss", "ProfitLossAttributableToOwnersOfParent",
+            "ProfitLossAttributableToOrdinaryEquityHoldersOfParentEntity",
+        ]
+        ocf_tags = ["NetCashProvidedByUsedInOperatingActivities", "CashFlowsFromUsedInOperatingActivities"]
+        capex_tags = [
+            "PaymentsToAcquirePropertyPlantAndEquipment",
+            "PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities",
+            "PurchaseOfPropertyPlantAndEquipmentIntangibleAssetsOtherThanGoodwillInvestmentPropertyAndOtherNoncurrentAssets",
+        ]
+        cost_revenue_tags = [
+            "CostOfRevenue", "CostOfGoodsAndServicesSold", "CostOfGoodsAndServiceExcludingDepreciationDepletionAndAmortization",
+            "CostOfSales", "CostOfSalesAndServices",
+        ]
+        cash_tags = [
+            "CashAndCashEquivalentsAtCarryingValue", "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
+            "CashCashEquivalentsAndShortTermInvestments", "Cash", "CashAndCashEquivalents",
+            "CashAndBankBalancesAtCentralBanks",
+        ]
+        debt_current_tags = [
+            "ShortTermBorrowings", "ShorttermBorrowings", "LongTermDebtAndFinanceLeaseObligationsCurrent",
+            "LongTermDebtCurrent", "CurrentPortionOfLongTermDebt", "CurrentPortionOfLongtermBorrowings",
+            "CurrentFinancialLiabilities",
+        ]
+        debt_long_tags = [
+            "LongTermDebtAndFinanceLeaseObligationsNoncurrent", "LongTermDebtNoncurrent", "LongTermDebt",
+            "LongtermBorrowings", "DebtInstrumentsIssuedAtAmortisedCost", "DebtSecurities",
+        ]
+        interest_tags = ["InterestExpenseNonOperating", "InterestExpense", "InterestExpenseOnBorrowings", "InterestExpenseOnDebtInstrumentsIssued"]
+        pretax_tags = [
+            "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+            "IncomeLossFromContinuingOperationsBeforeIncomeTaxes", "IncomeBeforeIncomeTaxes", "ProfitLossBeforeTax",
+        ]
+        tax_tags = ["IncomeTaxExpenseBenefit", "IncomeTaxExpenseContinuingOperations", "CurrentTaxExpenseIncome"]
+        equity_tags = [
+            "StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
+            "Equity", "EquityAttributableToOwnersOfParent",
+        ]
+        shares_tags = [
+            "WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic",
+            "WeightedAverageShares", "AdjustedWeightedAverageShares",
+        ]
+        eps_tags = ["EarningsPerShareDiluted", "EarningsPerShareBasic", "DilutedEarningsLossPerShare", "BasicEarningsLossPerShare"]
+        operating_income_tags = ["OperatingIncomeLoss", "ProfitLossFromOperatingActivities"]
         filing_row = latest_fact_row(facts, revenue_tags + net_income_tags)
         revenue = latest_fact(facts, revenue_tags)
         net_income = latest_fact(facts, net_income_tags)
@@ -959,10 +1333,10 @@ def get_sec_financials(ticker: str) -> tuple[dict, list[str]]:
         capex = abs(latest_fact(facts, capex_tags))
         assets = latest_fact(facts, ["Assets"])
         liabilities = latest_fact(facts, ["Liabilities"])
-        equity = latest_fact(facts, ["StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"])
-        shares = latest_fact(facts, ["WeightedAverageNumberOfDilutedSharesOutstanding"], forms=("10-K", "10-Q"))
-        eps = latest_fact(facts, ["EarningsPerShareDiluted"], forms=("10-K", "10-Q"))
-        operating_income = latest_fact(facts, ["OperatingIncomeLoss"])
+        equity = latest_fact(facts, equity_tags)
+        shares = latest_fact(facts, shares_tags, forms=("10-K", "10-Q", "20-F", "40-F"))
+        eps = latest_fact(facts, eps_tags, forms=("10-K", "10-Q", "20-F", "40-F"))
+        operating_income = latest_fact(facts, operating_income_tags)
         gross_profit = latest_fact(facts, ["GrossProfit"])
         if not gross_profit and revenue:
             cost_revenue = latest_fact(facts, cost_revenue_tags)
@@ -985,21 +1359,28 @@ def get_sec_financials(ticker: str) -> tuple[dict, list[str]]:
             "revenue": revenue_trend,
             "gross_profit": gross_trend,
             "net_income": period_series(facts, net_income_tags),
-            "eps": period_series(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasic"]),
-            "operating_income": period_series(facts, ["OperatingIncomeLoss"]),
+            "eps": period_series(facts, eps_tags),
+            "operating_income": period_series(facts, operating_income_tags),
             "operating_cash_flow": period_series(facts, ocf_tags),
             "capex": period_series(facts, capex_tags),
-            "shares": period_series(facts, ["WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic"]),
+            "shares": period_series(facts, shares_tags),
             "assets": instant_series(facts, ["Assets"]),
             "liabilities": instant_series(facts, ["Liabilities"]),
-            "equity": instant_series(facts, ["StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"]),
+            "equity": instant_series(facts, equity_tags),
             "cash": instant_series(facts, cash_tags),
         }
         changes = {key: series_change(value) for key, value in trends.items()}
         notes = ["SEC companyfacts connected."]
         if cik_source == "SEC ticker directory":
             notes.append("SEC CIK resolved dynamically from SEC ticker directory.")
-        return {
+        if currencies:
+            converted = [currency for currency in currencies if fx_to_usd(currency)]
+            missing = [currency for currency in currencies if currency not in converted]
+            if converted:
+                notes.append(f"SEC foreign-currency facts normalized to USD using live FX: {', '.join(converted)}.")
+            if missing:
+                notes.append(f"FX unavailable for {', '.join(missing)}; those non-USD fact rows were skipped.")
+        fin = {
             "revenue": revenue,
             "revenue_growth": annual_growth(facts, revenue_tags),
             "net_income": net_income,
@@ -1028,8 +1409,11 @@ def get_sec_financials(ticker: str) -> tuple[dict, list[str]]:
             "trends": trends,
             "changes": changes,
             "guidance": build_guidance_watchlist(ticker, changes),
-            "source": "SEC EDGAR companyfacts",
-        }, notes
+            "source": "SEC EDGAR companyfacts (USD-normalized)" if currencies else "SEC EDGAR companyfacts",
+        }
+        notes.extend(adjust_for_adr_ratio(ticker, fin))
+        fin["changes"] = {key: series_change(value) for key, value in fin.get("trends", {}).items()}
+        return fin, notes
     except Exception as exc:
         return {}, [f"SEC companyfacts unavailable: {exc.__class__.__name__}."]
 
@@ -2556,6 +2940,8 @@ def analyze(raw_ticker: str) -> dict:
     elif snapshot.get("eps", 0) > 0 and sec_fin.get("eps", 0) <= 0:
         sec_fin["eps"] = snapshot["eps"]
     notes.extend(enrich_with_yahoo_quarterly(ticker, sec_fin))
+    if not sec_fin.get("available", True) or safe_float(sec_fin.get("revenue")) <= 0:
+        notes.extend(enrich_with_yahoo_annual(ticker, sec_fin))
     notes.extend(apply_official_earnings_overlay(ticker, sec_fin))
     notes.extend(enrich_snapshot_with_financials(snapshot, sec_fin))
 
