@@ -418,6 +418,65 @@ def yahoo_symbol(ticker: str) -> str:
     return ticker.split(".")[-1].replace("-", "-").upper()
 
 
+def parse_market_number(value) -> float:
+    if value is None:
+        return 0.0
+    text = str(value).strip().replace("$", "").replace(",", "").replace("%", "")
+    if not text or text.upper() in {"N/A", "--"}:
+        return 0.0
+    multiplier = 1.0
+    suffix = text[-1].upper()
+    if suffix in {"T", "B", "M", "K"}:
+        text = text[:-1]
+        multiplier = {"T": 1_000_000_000_000, "B": 1_000_000_000, "M": 1_000_000, "K": 1_000}[suffix]
+    return safe_float(text) * multiplier
+
+
+def get_nasdaq_snapshot(ticker: str) -> tuple[dict, list[str]]:
+    try:
+        symbol = yahoo_symbol(ticker)
+        url = f"https://api.nasdaq.com/api/quote/{urllib.parse.quote(symbol)}/info?assetclass=stocks"
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0",
+            "Accept": "application/json",
+            "Origin": "https://www.nasdaq.com",
+            "Referer": f"https://www.nasdaq.com/market-activity/stocks/{symbol.lower()}",
+        })
+        with urllib.request.urlopen(req, timeout=8) as response:
+            data = json.loads(response.read().decode("utf-8"))
+        payload = data.get("data") or {}
+        primary = payload.get("primaryData") or {}
+        price = parse_market_number(primary.get("lastSalePrice"))
+        if price <= 0:
+            return {}, [f"Nasdaq quote returned no usable price for {ticker}."]
+        day_range = (((payload.get("keyStats") or {}).get("dayrange") or {}).get("value") or "")
+        high_low = [parse_market_number(part) for part in re.split(r"\s*-\s*", day_range) if part.strip()]
+        return {
+            "code": f"US.{symbol}",
+            "name": payload.get("companyName") or symbol,
+            "price": price,
+            "prev_close_price": 0,
+            "market_cap": 0,
+            "pe": 0,
+            "pe_ttm": 0,
+            "pb": 0,
+            "ey_ratio": 0,
+            "eps": 0,
+            "book_per_share": 0,
+            "volume": parse_market_number(primary.get("volume")),
+            "turnover_rate": 0,
+            "volume_ratio": 0,
+            "bid_ask_ratio": 0,
+            "day_low": high_low[0] if len(high_low) >= 2 else 0,
+            "day_high": high_low[1] if len(high_low) >= 2 else 0,
+            "market_status": payload.get("marketStatus") or "",
+            "last_trade_timestamp": primary.get("lastTradeTimestamp") or "",
+            "source": "Nasdaq quote",
+        }, ["Nasdaq quote snapshot connected."]
+    except Exception as exc:
+        return {}, [f"Nasdaq quote snapshot unavailable: {exc.__class__.__name__}."]
+
+
 def yahoo_chart(ticker: str, range_: str = "5d", interval: str = "1d") -> dict:
     params = urllib.parse.urlencode({"range": range_, "interval": interval})
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yahoo_symbol(ticker)}?{params}"
@@ -503,12 +562,12 @@ def get_futu_price_context(code: str, current_price: float, prev_close_price: fl
                 max_count=200,
             )
             if ret != RET_OK or data is None or len(data) == 0:
-                return fallback_price_context(code, current_price, prev_close_price), [f"Futu history unavailable for {code}."]
+                return {}, [f"Futu history unavailable for {code}."]
             rows = data.to_dict("records")
             closes = [safe_float(row.get("close")) for row in rows if safe_float(row.get("close")) > 0]
             volumes = [safe_float(row.get("volume")) for row in rows if safe_float(row.get("volume")) > 0]
             if not closes:
-                return fallback_price_context(code, current_price, prev_close_price), [f"Futu history returned no closes for {code}."]
+                return {}, [f"Futu history returned no closes for {code}."]
             price = current_price or closes[-1]
 
             def ref(days: int) -> float:
@@ -539,8 +598,7 @@ def get_futu_price_context(code: str, current_price: float, prev_close_price: fl
         finally:
             ctx.close()
     except Exception as exc:
-        fallback = fallback_price_context(code, current_price, prev_close_price)
-        return fallback, [f"Futu historical K-line unavailable: {exc.__class__.__name__}."]
+        return {}, [f"Futu historical K-line unavailable: {exc.__class__.__name__}."]
 
 
 def get_yahoo_price_context(ticker: str, current_price: float, prev_close_price: float = 0) -> tuple[dict, list[str]]:
@@ -587,38 +645,6 @@ def pct_change(current: float, previous: float) -> float | None:
     if not previous:
         return None
     return current / previous - 1
-
-
-def fallback_price_context(code: str, current_price: float, prev_close_price: float = 0) -> dict:
-    ticker = code.split(".")[-1]
-    rnd = ticker_seed(ticker)
-    def back(days: int) -> float:
-        drift = (rnd.random() - 0.48) * math.sqrt(days) * 0.045
-        return max(0.01, current_price / (1 + drift))
-    prev = prev_close_price if prev_close_price > 0 else back(1)
-    week = back(5)
-    month = back(21)
-    quarter = back(63)
-    avg_20 = 2_000_000 + rnd.random() * 25_000_000
-    ratio = 0.6 + rnd.random() * 2.2
-    return {
-        "previous_close": prev,
-        "week_ago": week,
-        "month_ago": month,
-        "quarter_ago": quarter,
-        "latest_close": current_price,
-        "day_change": pct_change(current_price, prev),
-        "week_change": pct_change(current_price, week),
-        "month_change": pct_change(current_price, month),
-        "quarter_change": pct_change(current_price, quarter),
-        "avg_volume_5d": avg_20 * ratio,
-        "avg_volume_20d": avg_20,
-        "avg_volume_60d": avg_20 * (0.8 + rnd.random() * 0.5),
-        "volume_ratio": ratio,
-        "volume_trend": ratio,
-        "history": [],
-        "source": "model fallback",
-    }
 
 
 def sec_request(url: str) -> dict:
@@ -977,71 +1003,48 @@ def get_sec_financials(ticker: str) -> tuple[dict, list[str]]:
         return {}, [f"SEC companyfacts unavailable: {exc.__class__.__name__}."]
 
 
-def fallback_snapshot(ticker: str, profile: dict) -> dict:
-    rnd = ticker_seed(ticker)
-    price = round(20 + rnd.random() * 280, 2)
-    market_cap = (2 + rnd.random() * 850) * 1_000_000_000
-    eps = max(0.35, price / (14 + rnd.random() * 28))
+def unavailable_snapshot(ticker: str) -> dict:
     return {
         "code": f"US.{ticker}",
         "name": ticker,
-        "price": price,
-        "market_cap": market_cap,
-        "prev_close_price": price * (0.99 + rnd.random() * 0.02),
-        "pe": price / eps,
-        "pe_ttm": price / eps,
-        "pb": 1.2 + rnd.random() * 9,
-        "ey_ratio": eps / price * 100,
-        "eps": eps,
-        "book_per_share": price / (1.2 + rnd.random() * 9),
-        "volume": 800_000 + rnd.random() * 45_000_000,
-        "turnover_rate": 0.4 + rnd.random() * 4,
-        "volume_ratio": 0.7 + rnd.random() * 2.4,
-        "bid_ask_ratio": -40 + rnd.random() * 80,
-        "source": "deterministic fallback",
+        "price": None,
+        "prev_close_price": None,
+        "market_cap": None,
+        "pe": None,
+        "pe_ttm": None,
+        "pb": None,
+        "ey_ratio": None,
+        "eps": None,
+        "book_per_share": None,
+        "volume": None,
+        "turnover_rate": None,
+        "volume_ratio": None,
+        "bid_ask_ratio": None,
+        "source": "无法获得 / unavailable",
+        "available": False,
     }
 
 
-def fallback_financials(ticker: str, snapshot: dict, profile: dict) -> dict:
-    rnd = ticker_seed(ticker)
-    market_cap = max(snapshot.get("market_cap", 0), 1_000_000_000)
-    price = max(snapshot.get("price", 0), 1)
-    shares = market_cap / price
-    revenue_multiple = 2.0 + rnd.random() * 7.5
-    revenue = market_cap / revenue_multiple
-    net_margin = 0.07 + rnd.random() * 0.23
-    if "low_margin" in profile["traits"]:
-        net_margin = 0.025 + rnd.random() * 0.05
-    if "turnaround" in profile["traits"]:
-        net_margin = 0.0 + rnd.random() * 0.08
-    net_income = revenue * net_margin
-    ocf = net_income * (0.9 + rnd.random() * 0.7)
-    capex_ratio = 0.04 + rnd.random() * 0.07
-    if "heavy_asset" in profile["traits"]:
-        capex_ratio = 0.12 + rnd.random() * 0.16
-    capex = revenue * capex_ratio
-    assets = market_cap * (0.8 + rnd.random() * 1.8)
-    liabilities = assets * (0.25 + rnd.random() * 0.45)
-    equity = assets - liabilities
+def unavailable_financials(ticker: str) -> dict:
     return {
-        "revenue": revenue,
-        "revenue_growth": profile["growth"] * (0.7 + rnd.random() * 0.8),
-        "net_income": net_income,
-        "operating_income": net_income * 1.25,
-        "gross_profit": revenue * (0.28 + rnd.random() * 0.38),
-        "operating_cash_flow": ocf,
-        "capex": capex,
-        "free_cash_flow": ocf - capex,
-        "assets": assets,
-        "liabilities": liabilities,
-        "equity": equity,
-        "shares": shares,
-        "eps": snapshot.get("eps") or (net_income / shares),
-        "cash": assets * (0.06 + rnd.random() * 0.16),
-        "total_debt": liabilities * (0.25 + rnd.random() * 0.45),
-        "interest_expense": liabilities * (0.012 + rnd.random() * 0.025),
-        "pretax_income": net_income / 0.82 if net_income > 0 else net_income,
-        "tax_provision": max(net_income / 0.82 - net_income, 0),
+        "revenue": 0,
+        "revenue_growth": 0,
+        "net_income": 0,
+        "operating_income": 0,
+        "gross_profit": 0,
+        "operating_cash_flow": 0,
+        "capex": 0,
+        "free_cash_flow": 0,
+        "assets": 0,
+        "liabilities": 0,
+        "equity": 0,
+        "shares": 0,
+        "eps": 0,
+        "cash": 0,
+        "total_debt": 0,
+        "interest_expense": 0,
+        "pretax_income": 0,
+        "tax_provision": 0,
         "latest_report": {
             "form": "N/A",
             "period_end": "N/A",
@@ -1049,10 +1052,11 @@ def fallback_financials(ticker: str, snapshot: dict, profile: dict) -> dict:
             "fiscal_period": "N/A",
             "fiscal_year": "N/A",
         },
-        "trends": fallback_trends(revenue, net_income, ocf, capex, profile["growth"]),
+        "trends": {},
         "changes": {},
         "guidance": build_guidance_watchlist(ticker, {}),
-        "source": "model fallback",
+        "source": "无法获得 / unavailable",
+        "available": False,
     }
 
 
@@ -1085,29 +1089,6 @@ def enrich_snapshot_with_financials(snapshot: dict, fin: dict) -> list[str]:
     if notes and "Yahoo Finance chart" in str(snapshot.get("source", "")):
         snapshot["source"] = "Yahoo Finance chart + SEC filings"
     return notes
-
-
-def fallback_trends(revenue: float, net_income: float, ocf: float, capex: float, growth: float) -> dict:
-    today = date.today()
-    points = []
-    for idx in range(12, 0, -1):
-        period_date = today - timedelta(days=idx * 91)
-        scale = (1 + growth / 4) ** (12 - idx)
-        points.append({"date": period_date.isoformat(), "value": revenue / 4 * scale, "form": "model"})
-    return {
-        "revenue": points,
-        "net_income": [{**p, "value": p["value"] * (net_income / max(revenue, 1))} for p in points],
-        "eps": [{**p, "value": (net_income / max(revenue, 1)) * 0.25} for p in points],
-        "operating_income": [{**p, "value": p["value"] * (net_income * 1.25 / max(revenue, 1))} for p in points],
-        "gross_profit": [{**p, "value": p["value"] * 0.45} for p in points],
-        "operating_cash_flow": [{**p, "value": p["value"] * (ocf / max(revenue, 1))} for p in points],
-        "capex": [{**p, "value": p["value"] * (capex / max(revenue, 1))} for p in points],
-        "shares": [{**p, "value": 1_000_000_000} for p in points],
-        "assets": [{**p, "value": p["value"] * 2.0} for p in points],
-        "liabilities": [{**p, "value": p["value"] * 1.6} for p in points],
-        "equity": [{**p, "value": p["value"] * 0.4} for p in points],
-        "cash": [{**p, "value": p["value"] * 0.2} for p in points],
-    }
 
 
 def build_guidance_watchlist(ticker: str, changes: dict) -> list[dict]:
@@ -1184,6 +1165,9 @@ def apply_official_earnings_overlay(ticker: str, fin: dict) -> list[str]:
 
 
 def format_size(market_cap: float) -> str:
+    market_cap = safe_float(market_cap)
+    if market_cap <= 0:
+        return "N/A"
     if market_cap >= 200_000_000_000:
         return "Mega cap"
     if market_cap >= 10_000_000_000:
@@ -1273,8 +1257,23 @@ def score_financials(fin: dict) -> dict:
 
 def valuation_methods(ticker: str, snapshot: dict, fin: dict, profile: dict, macro: dict, metrics: dict) -> tuple[list[dict], dict]:
     sector_model = SECTOR_DEFAULTS.get(profile["sector"], SECTOR_DEFAULTS["default"])
-    price = max(snapshot["price"], 0.01)
-    shares = max(fin["shares"] or snapshot.get("outstanding_shares") or snapshot["market_cap"] / price, 1)
+    price = safe_float(snapshot.get("price"))
+    if price <= 0:
+        return [], {
+            "current_price": None,
+            "fair_value": None,
+            "range_low": None,
+            "range_high": None,
+            "upside": None,
+            "score": 0,
+            "expected_growth": None,
+            "forward_eps": None,
+            "forward_pe": None,
+            "peg_ratio": None,
+            "status": "无法获得当前价格，估值暂停 / Current price unavailable; valuation paused",
+        }
+    market_cap = safe_float(snapshot.get("market_cap")) or price * max(safe_float(fin.get("shares")), 0)
+    shares = max(safe_float(fin.get("shares")) or safe_float(snapshot.get("outstanding_shares")) or market_cap / price, 1)
     raw_eps = fin.get("eps_ttm") or fin.get("eps") or snapshot.get("eps")
     eps = safe_float(raw_eps)
     if eps <= 0 and fin["net_income"] > 0:
@@ -1286,10 +1285,10 @@ def valuation_methods(ticker: str, snapshot: dict, fin: dict, profile: dict, mac
     forward_eps = eps * (1 + expected_growth)
     ebitda = max(fin["operating_income"] + abs(fin["capex"]) * 0.55, 0)
     net_debt = max(fin["liabilities"] - max(fin["operating_cash_flow"], 0), 0)
-    enterprise_value = snapshot.get("market_cap", price * shares) + net_debt
+    enterprise_value = market_cap + net_debt
     current_pe = price / eps if eps else 0
     current_forward_pe = price / forward_eps if forward_eps else 0
-    current_ps = snapshot.get("market_cap", price * shares) / fin["revenue"] if fin["revenue"] else 0
+    current_ps = market_cap / fin["revenue"] if fin["revenue"] else 0
     current_pb = price / book_per_share if book_per_share else 0
     current_pfcf = price / fcf_per_share if fcf_per_share else 0
     current_ev_ebitda = enterprise_value / ebitda if ebitda else 0
@@ -1424,7 +1423,8 @@ def estimate_beta(profile: dict, snapshot: dict) -> float:
         beta -= 0.22
     if "turnaround" in traits or "meme_sensitive" in traits:
         beta += 0.22
-    if snapshot.get("market_cap", 0) < 10_000_000_000:
+    market_cap = safe_float(snapshot.get("market_cap"))
+    if 0 < market_cap < 10_000_000_000:
         beta += 0.12
     return round(clamp(beta, 0.55, 2.35), 2)
 
@@ -1489,9 +1489,10 @@ def build_dcf_lab(ticker: str, snapshot: dict, fin: dict, profile: dict, macro: 
         values = [safe_float(row.get("value")) for row in points[-4:]]
         return sum(values) if len(values) >= 4 else 0.0
 
-    price = max(snapshot.get("price", 0), 0)
-    market_cap_b = (snapshot.get("market_cap", 0) or price * max(fin.get("shares", 0), 0)) / 1_000_000_000
-    shares_b = max(fin.get("shares") or snapshot.get("outstanding_shares") or (snapshot.get("market_cap", 0) / max(price, 0.01)), 0) / 1_000_000_000
+    price = max(safe_float(snapshot.get("price")), 0)
+    market_cap = safe_float(snapshot.get("market_cap")) or price * max(safe_float(fin.get("shares")), 0)
+    market_cap_b = market_cap / 1_000_000_000
+    shares_b = max(safe_float(fin.get("shares")) or safe_float(snapshot.get("outstanding_shares")) or (market_cap / max(price, 0.01)), 0) / 1_000_000_000
     revenue_ttm = trailing_sum("revenue") or fin.get("revenue", 0)
     ocf_ttm = trailing_sum("operating_cash_flow")
     capex_ttm = abs(trailing_sum("capex"))
@@ -1950,11 +1951,11 @@ def build_turnaround_model(ticker: str, snapshot: dict, fin: dict, profile: dict
 
 
 def attention_model(ticker: str, snapshot: dict, profile: dict, price_context: dict, x_social: dict | None = None, reddit_social: dict | None = None) -> dict:
-    turnover = snapshot.get("turnover_rate", 0)
-    volume = snapshot.get("volume", 0)
+    turnover = safe_float(snapshot.get("turnover_rate"))
+    volume = safe_float(snapshot.get("volume"))
     base = profile.get("attention", 45)
-    volume_ratio = snapshot.get("volume_ratio") or price_context.get("volume_ratio", 0)
-    volume_trend = price_context.get("volume_trend", 0)
+    volume_ratio = safe_float(snapshot.get("volume_ratio")) or safe_float(price_context.get("volume_ratio"))
+    volume_trend = safe_float(price_context.get("volume_trend"))
     momentum = max(
         abs(price_context.get("day_change") or 0),
         abs(price_context.get("week_change") or 0),
@@ -1972,7 +1973,7 @@ def attention_model(ticker: str, snapshot: dict, profile: dict, price_context: d
     signals = [
         {"name": "Liquidity", "value": round(liquidity), "detail": "成交量、换手率和流动性基础分 / Volume, turnover, and liquidity base score."},
         {"name": "Volume ratio", "value": round(volume_heat), "detail": f"量比 / Volume ratio {volume_ratio:.2f}x；5日/20日成交量趋势 / 5D vs 20D volume trend {volume_trend:.2f}x。"},
-        {"name": "Order imbalance", "value": round(clamp((snapshot.get("bid_ask_ratio", 0) + 100) / 2, 0, 100)), "detail": f"Futu 委比 / bid-ask imbalance {snapshot.get('bid_ask_ratio', 0):.1f}%。"},
+        {"name": "Order imbalance", "value": round(clamp((safe_float(snapshot.get("bid_ask_ratio")) + 100) / 2, 0, 100)), "detail": f"Futu 委比 / bid-ask imbalance {safe_float(snapshot.get('bid_ask_ratio')):.1f}%。"},
         {"name": "Price/volume velocity", "value": round(velocity), "detail": "结合价格波动、量比、换手率和基础关注度 / Combines price move, volume ratio, turnover, and baseline attention."},
         {"name": "Social/news baseline", "value": round(social), "detail": "未覆盖平台仍用题材基线；Reddit 公开搜索会覆盖这部分 / Uncovered platforms use theme baseline; Reddit public search can override part of it."},
     ]
@@ -2214,7 +2215,7 @@ def risk_model(snapshot: dict, fin: dict, metrics: dict, profile: dict, valuatio
         add("high", "自由现金流为负 / Free cash flow is negative", "现金流为负时，DCF 和 P/FCF 可信度下降，需关注融资和稀释风险 / When FCF is negative, DCF and P/FCF are less reliable; watch financing and dilution risk.")
     if metrics["debt_to_assets"] > 0.7:
         add("high", "资产负债杠杆偏高 / Balance sheet leverage is high", "负债占资产比例较高，利率上行或信用收缩时估值折扣应提高 / High liabilities-to-assets means valuation haircut should rise when rates or credit tighten.")
-    if valuation["forward_pe"] > 45:
+    if safe_float(valuation.get("forward_pe")) > 45:
         add("medium", "Forward PE 需要强执行 / Forward PE requires strong execution", "Forward PE 偏高，必须依赖持续增长、预期上修和市场热度维持倍数 / High Forward PE needs growth, estimate revisions, and attention to sustain the multiple.")
     if "turnaround" in profile["traits"]:
         add("medium", "转型执行风险 / Turnaround execution risk", "转型/扭亏公司不能只看低 PE，需要看毛利率、capex、现金流和管理层执行 / For turnarounds, low PE is not enough; watch gross margin, capex, cash flow, and execution.")
@@ -2258,10 +2259,11 @@ def macro_exposure(profile: dict, macro: dict) -> dict:
 
 
 def build_summary(fin_score: dict, valuation: dict, attention: dict, risk: dict, macro: dict) -> dict:
+    expected_growth = safe_float(valuation.get("expected_growth"))
     score = (
         fin_score["score"] * 0.25
-        + valuation["score"] * 0.20
-        + clamp(50 + valuation["expected_growth"] * 160, 0, 100) * 0.15
+        + safe_float(valuation.get("score")) * 0.20
+        + clamp(50 + expected_growth * 160, 0, 100) * 0.15
         + attention["score"] * 0.15
         + risk["score"] * 0.10
         + macro["score"] * 0.15
@@ -2294,27 +2296,51 @@ def analyze(raw_ticker: str) -> dict:
     notes = []
     snapshot, futu_notes = get_futu_snapshot(code)
     notes.extend(futu_notes)
-    if not snapshot or snapshot.get("price", 0) <= 0:
+    if not snapshot or safe_float(snapshot.get("price")) <= 0:
+        nasdaq_snapshot, nasdaq_notes = get_nasdaq_snapshot(ticker)
+        notes.extend(nasdaq_notes)
+        if nasdaq_snapshot and safe_float(nasdaq_snapshot.get("price")) > 0:
+            snapshot = nasdaq_snapshot
+    if not snapshot or safe_float(snapshot.get("price")) <= 0:
         yahoo_snapshot, yahoo_notes = get_yahoo_snapshot(ticker)
         notes.extend(yahoo_notes)
-        if yahoo_snapshot and yahoo_snapshot.get("price", 0) > 0:
+        if yahoo_snapshot and safe_float(yahoo_snapshot.get("price")) > 0:
             snapshot = yahoo_snapshot
         else:
-            snapshot = fallback_snapshot(ticker, profile)
-            notes.append("Using deterministic snapshot fallback.")
-    price_context, price_notes = get_futu_price_context(snapshot.get("code", code), snapshot.get("price", 0), snapshot.get("prev_close_price", 0))
+            snapshot = unavailable_snapshot(ticker)
+            notes.append("Live/delayed price unavailable from Futu, Nasdaq, and Yahoo.")
+    price_context, price_notes = get_futu_price_context(snapshot.get("code", code), safe_float(snapshot.get("price")), safe_float(snapshot.get("prev_close_price")))
     notes.extend(price_notes)
-    if price_context.get("source") == "model fallback":
-        yahoo_context, yahoo_context_notes = get_yahoo_price_context(ticker, snapshot.get("price", 0), snapshot.get("prev_close_price", 0))
+    if not price_context or not price_context.get("history"):
+        yahoo_context, yahoo_context_notes = get_yahoo_price_context(ticker, safe_float(snapshot.get("price")), safe_float(snapshot.get("prev_close_price")))
         notes.extend(yahoo_context_notes)
         if yahoo_context:
             price_context = yahoo_context
+    if not price_context:
+        price_context = {
+            "previous_close": None,
+            "week_ago": None,
+            "month_ago": None,
+            "quarter_ago": None,
+            "latest_close": safe_float(snapshot.get("price")) or None,
+            "day_change": None,
+            "week_change": None,
+            "month_change": None,
+            "quarter_change": None,
+            "avg_volume_5d": None,
+            "avg_volume_20d": None,
+            "avg_volume_60d": None,
+            "volume_ratio": None,
+            "volume_trend": None,
+            "history": [],
+            "source": "无法获得 / unavailable",
+        }
 
     sec_fin, sec_notes = get_sec_financials(ticker)
     notes.extend(sec_notes)
     if not sec_fin or sec_fin.get("revenue", 0) <= 0:
-        sec_fin = fallback_financials(ticker, snapshot, profile)
-        notes.append("Using model fallback financials.")
+        sec_fin = unavailable_financials(ticker)
+        notes.append("Financial statement data unavailable from SEC/Yahoo; no simulated financials used.")
     elif snapshot.get("eps", 0) > 0 and sec_fin.get("eps", 0) <= 0:
         sec_fin["eps"] = snapshot["eps"]
     notes.extend(enrich_with_yahoo_quarterly(ticker, sec_fin))

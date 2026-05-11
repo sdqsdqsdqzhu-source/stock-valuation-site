@@ -288,11 +288,37 @@ function renderOverview(data) {
     ${stat("当前价格", money(data.snapshot.price), `${sourceHint}${priceHint}`)}
     ${stat("市值", money(data.snapshot.market_cap), "Market cap")}
     ${stat("Forward PE", ratio(data.valuation.forward_pe, 1), `模型预期估值 / Model forward estimate · Futu TTM/动态PE ${ratio(data.snapshot.pe_ttm || data.snapshot.pe, 1)}`)}
-    ${stat("综合合理价", money(data.valuation.fair_value), `${data.valuation.upside}% vs current / 相对当前价格`)}
+    ${stat("综合合理价", money(data.valuation.fair_value), Number.isFinite(data.valuation.upside) ? `${data.valuation.upside}% vs current / 相对当前价格` : "无法估值 / valuation unavailable")}
   `;
 }
 
 function renderValuation(data) {
+  if (!Number.isFinite(data.valuation.current_price) || !Number.isFinite(data.valuation.fair_value)) {
+    const status = data.valuation.status || "无法获得当前价格，估值暂停 / Current price unavailable; valuation paused";
+    document.querySelector("#fairValueBadge").innerHTML = `
+      <span>N/A</span>
+      <strong>--</strong>
+    `;
+    document.querySelector("#valuationRange").innerHTML = `
+      <div class="empty-state">${esc(status)}</div>
+    `;
+    document.querySelector("#methods").innerHTML = `
+      <article class="method disabled">
+        <div>
+          <div class="method-title">
+            <h3>估值暂停 / Valuation paused</h3>
+            <span>N/A</span>
+          </div>
+          <p>${esc(status)}</p>
+        </div>
+        <div class="method-price">
+          <strong>N/A</strong>
+          <span>无法获得 / unavailable</span>
+        </div>
+      </article>
+    `;
+    return;
+  }
   document.querySelector("#fairValueBadge").innerHTML = `
     <span>${money(data.valuation.range_low)} - ${money(data.valuation.range_high)}</span>
     <strong>${data.valuation.upside}%</strong>
