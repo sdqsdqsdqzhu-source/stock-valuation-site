@@ -700,9 +700,16 @@ function renderGuidance(data) {
 function renderAttention(data) {
   const reddit = data.attention.reddit_social || {};
   const redditPosts = Array.isArray(reddit.top_posts) ? reddit.top_posts : [];
+  const canBridge = !reddit.connected || reddit.cached;
   document.querySelector("#attention").innerHTML = `
     ${bar("Attention score", data.attention.score, data.attention.level)}
     ${data.attention.signals.map((item) => bar(item.name, item.value, item.detail)).join("")}
+    ${canBridge ? `
+      <button type="button" class="secondary-button" id="localRedditBtn">
+        用本地桥接刷新Reddit / Refresh Reddit via local bridge
+      </button>
+      <p class="field-note">需要先运行 start_reddit_bridge.cmd；这个按钮只影响Reddit区块 / Run start_reddit_bridge.cmd first; this only affects the Reddit section.</p>
+    ` : ""}
     ${redditHistogram(reddit)}
     ${redditPosts.length ? `
       <details class="reddit-posts">
@@ -722,6 +729,18 @@ function renderAttention(data) {
       `).join("")}
     </div>
   `;
+}
+
+function safeRenderSection(name, renderFn) {
+  try {
+    renderFn();
+  } catch (error) {
+    console.error(`${name} render failed`, error);
+    const notes = document.querySelector("#notes");
+    if (notes) {
+      notes.insertAdjacentHTML("afterbegin", `<span>${esc(name)} 显示失败 / render failed: ${esc(error.message || error)}</span>`);
+    }
+  }
 }
 
 function attentionLevel(score) {
@@ -844,16 +863,16 @@ function renderNotes(data) {
 function render(data) {
   currentData = data;
   statusBand.textContent = `${data.ticker} 分析完成 / Analysis complete · ${data.updated_at}`;
-  renderOverview(data);
-  renderValuation(data);
-  renderDcfLab(data);
-  renderTurnaround(data);
-  renderFinancials(data);
-  renderGuidance(data);
-  renderAttention(data);
-  renderMacro(data);
-  renderRisks(data);
-  renderNotes(data);
+  safeRenderSection("Overview / 概览", () => renderOverview(data));
+  safeRenderSection("Valuation / 估值", () => renderValuation(data));
+  safeRenderSection("DCF Lab / DCF实验室", () => renderDcfLab(data));
+  safeRenderSection("Turnaround / 拐点修复", () => renderTurnaround(data));
+  safeRenderSection("Financials / 财务", () => renderFinancials(data));
+  safeRenderSection("Guidance / 指引", () => renderGuidance(data));
+  safeRenderSection("Attention / 市场热度", () => renderAttention(data));
+  safeRenderSection("Macro / 宏观", () => renderMacro(data));
+  safeRenderSection("Risks / 风险", () => renderRisks(data));
+  safeRenderSection("Notes / 数据说明", () => renderNotes(data));
 }
 
 async function analyze(ticker) {
@@ -864,7 +883,6 @@ async function analyze(ticker) {
   }
   const data = await response.json();
   render(data);
-  enrichRedditFromLocal(data, ticker);
 }
 
 form.addEventListener("submit", (event) => {
@@ -873,6 +891,15 @@ form.addEventListener("submit", (event) => {
   input.value = normalized;
   analyze(normalized).catch((error) => {
     statusBand.textContent = `分析失败 / Analysis failed：${error.message}`;
+  });
+});
+
+document.querySelector("#attention")?.addEventListener("click", (event) => {
+  if (event.target?.id !== "localRedditBtn") return;
+  if (!currentData) return;
+  const ticker = currentData.ticker || normalizeInputTicker(input.value.trim() || "INTC");
+  enrichRedditFromLocal(currentData, ticker).catch((error) => {
+    statusBand.textContent = `本地Reddit桥接失败 / Local Reddit bridge failed：${error.message || error}`;
   });
 });
 
