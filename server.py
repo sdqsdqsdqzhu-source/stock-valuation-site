@@ -31,6 +31,7 @@ REDDIT_SUBREDDITS = [
 ]
 REDDIT_TOKEN_CACHE = {"token": None, "expires_at": 0.0}
 REDDIT_CACHE_PATH = PUBLIC / "data" / "reddit_cache.json"
+SEC_TICKER_CACHE = {"loaded": False, "map": {}}
 
 
 CIK_BY_TICKER = {
@@ -657,6 +658,30 @@ def sec_request(url: str) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
+def get_sec_cik(ticker: str) -> tuple[str | None, str]:
+    ticker = ticker.upper().strip()
+    if ticker in CIK_BY_TICKER:
+        return CIK_BY_TICKER[ticker], "configured"
+    if not SEC_TICKER_CACHE["loaded"]:
+        try:
+            data = sec_request("https://www.sec.gov/files/company_tickers.json")
+            ticker_map = {}
+            for row in data.values():
+                row_ticker = str(row.get("ticker") or "").upper()
+                cik_value = safe_float(row.get("cik_str"), None)
+                if row_ticker and cik_value is not None:
+                    ticker_map[row_ticker] = str(int(cik_value)).zfill(10)
+            SEC_TICKER_CACHE["map"] = ticker_map
+        except Exception:
+            SEC_TICKER_CACHE["map"] = {}
+        SEC_TICKER_CACHE["loaded"] = True
+    cik = SEC_TICKER_CACHE["map"].get(ticker)
+    if cik:
+        CIK_BY_TICKER[ticker] = cik
+        return cik, "SEC ticker directory"
+    return None, "unavailable"
+
+
 def yahoo_quarterly_request(ticker: str) -> dict:
     types = [
         "quarterlyTotalRevenue",
@@ -911,9 +936,9 @@ def annual_growth(facts: dict, tags: list[str]) -> float:
 
 
 def get_sec_financials(ticker: str) -> tuple[dict, list[str]]:
-    cik = CIK_BY_TICKER.get(ticker)
+    cik, cik_source = get_sec_cik(ticker)
     if not cik:
-        return {}, ["SEC CIK not configured for this ticker yet."]
+        return {}, ["SEC CIK unavailable for this ticker."]
     try:
         facts = sec_request(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json")
         revenue_tags = ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues", "SalesRevenueNet"]
@@ -971,6 +996,9 @@ def get_sec_financials(ticker: str) -> tuple[dict, list[str]]:
             "cash": instant_series(facts, cash_tags),
         }
         changes = {key: series_change(value) for key, value in trends.items()}
+        notes = ["SEC companyfacts connected."]
+        if cik_source == "SEC ticker directory":
+            notes.append("SEC CIK resolved dynamically from SEC ticker directory.")
         return {
             "revenue": revenue,
             "revenue_growth": annual_growth(facts, revenue_tags),
@@ -1001,7 +1029,7 @@ def get_sec_financials(ticker: str) -> tuple[dict, list[str]]:
             "changes": changes,
             "guidance": build_guidance_watchlist(ticker, changes),
             "source": "SEC EDGAR companyfacts",
-        }, ["SEC companyfacts connected."]
+        }, notes
     except Exception as exc:
         return {}, [f"SEC companyfacts unavailable: {exc.__class__.__name__}."]
 
@@ -1295,6 +1323,9 @@ def valuation_methods(ticker: str, snapshot: dict, fin: dict, profile: dict, mac
     current_pb = price / book_per_share if book_per_share else 0
     current_pfcf = price / fcf_per_share if fcf_per_share else 0
     current_ev_ebitda = enterprise_value / ebitda if ebitda else 0
+    cash_per_share = safe_float(fin.get("cash")) / shares if shares else 0
+    net_cash_per_share = (safe_float(fin.get("cash")) - safe_float(fin.get("total_debt"))) / shares if shares else 0
+    current_ev_cash = enterprise_value / safe_float(fin.get("cash")) if safe_float(fin.get("cash")) else 0
 
     methods = []
 
@@ -1343,8 +1374,10 @@ def valuation_methods(ticker: str, snapshot: dict, fin: dict, profile: dict, mac
     fair_peg_pe = clamp(max(expected_growth, 0.02) * 100 * 1.15, 10, 48)
     peg_ratio = current_forward_pe / (expected_growth * 100) if current_forward_pe and expected_growth else 0
     add("peg", "PEG Ratio", forward_eps * fair_peg_pe, f"PEG 是 Forward PE / EPS 增速的比值；当前 PEG Ratio 约 {peg_ratio:.2f} / PEG equals Forward PE divided by EPS growth; current PEG is about {peg_ratio:.2f}.", "Medium", "Forward EPS 或增长率为 0，PEG Ratio 不适用 / Forward EPS or growth is zero, so PEG is not applicable.", metric_label="Current PEG", metric_value=peg_ratio, target_label="Fair PEG", target_value=1.15)
-    add("ps", "Price / Sales", revenue_per_share * sector_model["target_ps"], "适合高成长或利润暂时被投入压低的公司，但低毛利业务要打折 / Useful for high-growth companies or firms investing through margins; low-margin businesses need a haircut.", "Medium", metric_label="Current P/S", metric_value=current_ps, target_label="Target P/S", target_value=sector_model["target_ps"])
+    add("ps", "Price / Sales", revenue_per_share * sector_model["target_ps"], "适合高成长或利润暂时被投入压低的公司，但低毛利业务要打折 / Useful for high-growth companies or firms investing through margins; low-margin businesses need a haircut.", "Medium", "营收为 0 或缺失，P/S 暂不适用 / Revenue is zero or missing, so P/S is not applicable.", metric_label="Current P/S", metric_value=current_ps, target_label="Target P/S", target_value=sector_model["target_ps"])
     add("pb", "Price / Book", book_per_share * sector_model["target_pb"], "金融、保险、重资产公司更有用；轻资产科技股只作参考 / More useful for financials, insurers, and asset-heavy companies; only a reference for asset-light tech.", "Medium", metric_label="Current P/B", metric_value=current_pb, target_label="Target P/B", target_value=sector_model["target_pb"])
+    if safe_float(fin.get("revenue")) <= 0 and safe_float(fin.get("cash")) > 0:
+        add("net_cash", "Net Cash / Share", net_cash_per_share, "适合 pre-revenue、研发型或SPAC后公司，用净现金估算资产保护底线；不代表技术或项目成功价值 / Useful for pre-revenue, R&D-heavy, or post-SPAC companies; net cash estimates an asset-protection floor, not technology or project success value.", "Risk", metric_label="Current EV/Cash", metric_value=current_ev_cash, target_label="Cash / Share", target_value=cash_per_share)
     add("pfcf", "Price / FCF", fcf_per_share * sector_model["target_pfcf"], "现金流是估值的硬地板，适合成熟优质公司 / Cash flow is the hard floor of valuation; useful for mature quality companies.", "High" if fcf_per_share > 0 else "Low", "自由现金流为 0，P/FCF 不能作为估值锚 / Free cash flow is zero, so P/FCF cannot anchor valuation.", metric_label="Current P/FCF", metric_value=current_pfcf, target_label="Target P/FCF", target_value=sector_model["target_pfcf"])
     equity_value = ebitda * sector_model["target_ev_ebitda"] - net_debt if sector_model["target_ev_ebitda"] > 0 else 0
     add("ev_ebitda", "EV / EBITDA", equity_value / shares, "适合周期、工业、能源、半导体等资本密集行业 / Fits cyclical, industrial, energy, semiconductor, and capital-intensive industries.", "High", "EBITDA 为 0，EV/EBITDA 暂不适用 / EBITDA is zero, so EV/EBITDA is not applicable.", metric_label="Current EV/EBITDA", metric_value=current_ev_ebitda, target_label="Target EV/EBITDA", target_value=sector_model["target_ev_ebitda"])
@@ -2517,7 +2550,7 @@ def analyze(raw_ticker: str) -> dict:
 
     sec_fin, sec_notes = get_sec_financials(ticker)
     notes.extend(sec_notes)
-    if not sec_fin or sec_fin.get("revenue", 0) <= 0:
+    if not sec_fin:
         sec_fin = unavailable_financials(ticker)
         notes.append("Financial statement data unavailable from SEC/Yahoo; no simulated financials used.")
     elif snapshot.get("eps", 0) > 0 and sec_fin.get("eps", 0) <= 0:
