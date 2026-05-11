@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-11T21:51:34.197592Z",
+  "updated_at": "2026-05-11T21:59:43.436435Z",
   "records": {
     "NVDA": {
       "cached_at": "2026-05-11T21:51:28.122467Z",
@@ -1379,6 +1379,94 @@
           "upvote_ratio": 0.4,
           "created_utc": 1778035338.0,
           "created": "2026-05-06"
+        }
+      ],
+      "errors": []
+    },
+    "PLTR": {
+      "cached_at": "2026-05-11T21:59:43.436435Z",
+      "source": "Local public Reddit JSON / 本地公开Reddit JSON",
+      "successful_subreddits": 8,
+      "searched_subreddits": [
+        "wallstreetbets",
+        "stocks",
+        "investing",
+        "StockMarket",
+        "options",
+        "SecurityAnalysis",
+        "ValueInvesting",
+        "pennystocks"
+      ],
+      "posts": [
+        {
+          "subreddit": "r/wallstreetbets",
+          "title": "Things have been going alright",
+          "url": "https://www.reddit.com/r/wallstreetbets/comments/1t7mq0c/things_have_been_going_alright/",
+          "score": 39,
+          "comments": 33,
+          "upvote_ratio": 0.87,
+          "created_utc": 1778279084.0,
+          "created": "2026-05-08"
+        },
+        {
+          "subreddit": "r/stocks",
+          "title": "Palantir Q1 revenue jumps 85% to record on booming US business",
+          "url": "https://www.reddit.com/r/stocks/comments/1t3ta4m/palantir_q1_revenue_jumps_85_to_record_on_booming/",
+          "score": 230,
+          "comments": 139,
+          "upvote_ratio": 0.85,
+          "created_utc": 1777925664.0,
+          "created": "2026-05-04"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "Palantir ($PLTR) Earnings Vol Trade Post-mortem - Patience is the Key",
+          "url": "https://www.reddit.com/r/options/comments/1t4hez8/palantir_pltr_earnings_vol_trade_postmortem/",
+          "score": 8,
+          "comments": 0,
+          "upvote_ratio": 0.62,
+          "created_utc": 1777991970.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/options",
+          "title": "Palantir ($PLTR) Earnings Vol Setup - Are Traders Leaving Money on the Table?",
+          "url": "https://www.reddit.com/r/options/comments/1t4135r/palantir_pltr_earnings_vol_setup_are_traders/",
+          "score": 5,
+          "comments": 15,
+          "upvote_ratio": 0.64,
+          "created_utc": 1777944321.0,
+          "created": "2026-05-05"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "Weekend Homework: Rackspace Technology (RXT)",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t8t101/weekend_homework_rackspace_technology_rxt/",
+          "score": 13,
+          "comments": 11,
+          "upvote_ratio": 0.76,
+          "created_utc": 1778376334.0,
+          "created": "2026-05-10"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "r/ValueInvesting top picks vs Meme Stocks - 12 months performance",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t80gix/rvalueinvesting_top_picks_vs_meme_stocks_12/",
+          "score": 119,
+          "comments": 110,
+          "upvote_ratio": 0.88,
+          "created_utc": 1778320077.0,
+          "created": "2026-05-09"
+        },
+        {
+          "subreddit": "r/ValueInvesting",
+          "title": "AI Euphoria and the Allure of Unlimited Growth",
+          "url": "https://www.reddit.com/r/ValueInvesting/comments/1t5wdxx/ai_euphoria_and_the_allure_of_unlimited_growth/",
+          "score": 75,
+          "comments": 117,
+          "upvote_ratio": 0.82,
+          "created_utc": 1778117588.0,
+          "created": "2026-05-07"
         }
       ],
       "errors": []

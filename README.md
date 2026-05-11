@@ -62,7 +62,28 @@ http://127.0.0.1:8765
 
 ## Reddit 本地缓存同步
 
-如果 Reddit 官方 API 申请太麻烦，可以用本地电脑抓公开搜索结果，再通过 GitHub/Vercel 同步给线上网站读取：
+如果 Reddit 官方 API 申请太麻烦，有两种本地方案。
+
+### 任意股票实时桥接
+
+双击运行：
+
+```text
+start_reddit_bridge.cmd
+```
+
+或者在 PowerShell 运行：
+
+```powershell
+cd C:\Users\David\market_dashboard\stock_valuation_site
+& C:\Users\David\python312\python.exe -X utf8 scripts\local_reddit_bridge.py
+```
+
+保持这个窗口开着，再打开线上网站。页面会自动请求 `http://127.0.0.1:8788/api/reddit?ticker=...`，所以任意 ticker 都可以由本机实时抓 Reddit 数据。
+
+### 同步缓存到 Vercel
+
+也可以用本地电脑抓公开搜索结果，再通过 GitHub/Vercel 同步给线上网站读取：
 
 ```powershell
 cd C:\Users\David\market_dashboard\stock_valuation_site

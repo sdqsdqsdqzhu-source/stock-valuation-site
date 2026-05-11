@@ -74,6 +74,8 @@ const LABELS = {
   "FCF conversion": "自由现金流转换率 / FCF conversion",
   "Attention score": "市场热度分 / Attention score",
   "Reddit representative posts": "Reddit代表帖子 / Reddit representative posts",
+  "Local live Reddit bridge": "本地实时Reddit桥接 / Local live Reddit bridge",
+  "Local Reddit cache": "本地Reddit缓存 / Local Reddit cache",
   "Score": "分数 / Score",
   "Comments": "评论 / Comments",
   "Upvote": "赞同率 / Upvote",
@@ -111,6 +113,8 @@ const LABELS = {
   "Price/volume velocity": "价量动能 / Price/volume velocity",
   "Social/news baseline": "社媒/新闻基线 / Social/news baseline",
   "Reddit public search": "Reddit公开搜索 / Reddit public search",
+  "Reddit OAuth API": "Reddit官方OAuth / Reddit OAuth API",
+  "Reddit public JSON": "Reddit公开JSON / Reddit public JSON",
   "X recent search": "X近期搜索 / X recent search",
   "Rate sensitivity": "利率敏感度 / Rate sensitivity",
   "Tariff sensitivity": "关税敏感度 / Tariff sensitivity",
@@ -155,6 +159,8 @@ const STATUS = {
   planned: "计划中 / planned",
   limited: "受限 / limited",
   "needs key": "需要Key / needs key",
+  "needs OAuth": "需要OAuth / needs OAuth",
+  "local bridge": "本地桥接 / local bridge",
   "public limited": "公开接口受限 / public limited",
   high: "高 / high",
   medium: "中 / medium",
@@ -213,6 +219,9 @@ const noteBi = (note) => {
     ["SEC companyfacts connected.", "SEC财报结构化数据已连接 / SEC companyfacts connected."],
     ["FRED macro data connected.", "FRED宏观数据已连接 / FRED macro data connected."],
     ["Reddit public search connected", "Reddit公开搜索已连接 / Reddit public search connected"],
+    ["Reddit live search unavailable; using local cache", "Reddit实时搜索不可用，正在使用本地缓存 / Reddit live search unavailable; using local cache"],
+    ["Local Reddit bridge connected", "本地Reddit桥接已连接 / Local Reddit bridge connected"],
+    ["Local Reddit bridge unavailable", "本地Reddit桥接不可用 / Local Reddit bridge unavailable"],
     ["X recent search unavailable", "X近期搜索不可用 / X recent search unavailable"],
     ["FRED_API_KEY not set", "未设置FRED_API_KEY / FRED_API_KEY not set"],
     ["Using deterministic snapshot fallback.", "正在使用确定性行情备用数据 / Using deterministic snapshot fallback."],
@@ -715,6 +724,89 @@ function renderAttention(data) {
   `;
 }
 
+function attentionLevel(score) {
+  return score >= 80 ? "Very high" : score >= 65 ? "High" : score >= 45 ? "Moderate" : "Low";
+}
+
+function upsertRedditConnector(data, status, needs) {
+  const connectors = data.attention.connectors || [];
+  const reddit = connectors.find((item) => String(item.name || "").includes("Reddit"));
+  if (reddit) {
+    reddit.status = status;
+    reddit.needs = needs;
+  } else {
+    connectors.push({ name: "Reddit", status, needs });
+  }
+  data.attention.connectors = connectors;
+}
+
+function applyLocalReddit(data, reddit) {
+  if (!reddit || !reddit.connected) return;
+  data.attention.reddit_social = reddit;
+  data.attention.signals = (data.attention.signals || []).filter((item) => !String(item.name || "").includes("Reddit"));
+  data.attention.signals.unshift({
+    name: reddit.source || "Local live Reddit bridge",
+    value: reddit.score,
+    detail: `最近 7 天抓到 ${reddit.posts} 篇帖子、${reddit.comments} 条评论，帖子分数约 ${reddit.upvotes} / Found ${reddit.posts} posts, ${reddit.comments} comments, and about ${reddit.upvotes} post score in the last 7 days.`,
+  });
+  data.attention.score = Math.round(Math.max(Number(data.attention.score) || 0, Number(reddit.score) || 0));
+  data.attention.level = attentionLevel(data.attention.score);
+  upsertRedditConnector(data, "local bridge", "本地电脑实时抓取Reddit；任意ticker可用 / Local computer fetches Reddit live; available for any ticker");
+  data.data_notes = (data.data_notes || []).filter((note) => !String(note).includes("Reddit search unavailable"));
+  data.data_notes.unshift(`Local Reddit bridge connected for ${data.ticker}.`);
+}
+
+async function fetchLocalReddit(ticker) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 18000);
+  const urls = [
+    `http://127.0.0.1:8788/api/reddit?ticker=${encodeURIComponent(ticker)}`,
+    `http://localhost:8788/api/reddit?ticker=${encodeURIComponent(ticker)}`,
+  ];
+  try {
+    let lastError = null;
+    for (const url of urls) {
+      try {
+        const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
+        if (!response.ok) {
+          lastError = new Error(await response.text());
+          continue;
+        }
+        return await response.json();
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError || new Error("Local bridge unavailable");
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function enrichRedditFromLocal(data, ticker) {
+  const reddit = data.attention.reddit_social || {};
+  if (reddit.connected && !reddit.cached) return;
+  statusBand.textContent = `${data.ticker} 基础分析完成，正在尝试本地Reddit桥接 / Base analysis complete; trying local Reddit bridge...`;
+  try {
+    const localReddit = await fetchLocalReddit(ticker);
+    if (localReddit && localReddit.connected) {
+      applyLocalReddit(data, localReddit);
+      renderAttention(data);
+      renderNotes(data);
+      statusBand.textContent = `${data.ticker} 分析完成，本地Reddit已更新 / Analysis complete; local Reddit updated · ${data.updated_at}`;
+    }
+  } catch (error) {
+    if (!reddit.connected) {
+      upsertRedditConnector(data, "needs OAuth", "本地Reddit桥接未运行：请启动 scripts/local_reddit_bridge.py / Local Reddit bridge is not running: start scripts/local_reddit_bridge.py");
+      data.data_notes = data.data_notes || [];
+      data.data_notes.unshift(`Local Reddit bridge unavailable: ${error.message || error}.`);
+      renderAttention(data);
+      renderNotes(data);
+    }
+    statusBand.textContent = `${data.ticker} 分析完成 / Analysis complete · ${data.updated_at}`;
+  }
+}
+
 function renderMacro(data) {
   document.querySelector("#macro").innerHTML = `
     ${bar("Macro/policy fit", data.macro.score, data.macro.interpretation)}
@@ -770,7 +862,9 @@ async function analyze(ticker) {
   if (!response.ok) {
     throw new Error(await response.text());
   }
-  render(await response.json());
+  const data = await response.json();
+  render(data);
+  enrichRedditFromLocal(data, ticker);
 }
 
 form.addEventListener("submit", (event) => {
