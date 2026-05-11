@@ -2190,9 +2190,33 @@ def build_reddit_attention_payload(posts: list[dict], source: str, successful_re
 
 def load_reddit_cache(ticker: str) -> tuple[dict | None, str | None]:
     try:
-        if not REDDIT_CACHE_PATH.exists():
+        cache = None
+        if REDDIT_CACHE_PATH.exists():
+            cache = json.loads(REDDIT_CACHE_PATH.read_text(encoding="utf-8"))
+        else:
+            base_candidates = [
+                os.environ.get("STOCK_SITE_BASE_URL", "").strip(),
+                os.environ.get("VERCEL_PROJECT_PRODUCTION_URL", "").strip(),
+                os.environ.get("VERCEL_URL", "").strip(),
+                "https://stock-valuation-site.vercel.app",
+            ]
+            for base in base_candidates:
+                if not base:
+                    continue
+                if not base.startswith(("http://", "https://")):
+                    base = f"https://{base}"
+                try:
+                    req = urllib.request.Request(
+                        f"{base.rstrip('/')}/data/reddit_cache.json",
+                        headers={"User-Agent": "stock-valuation-site/1.0", "Accept": "application/json"},
+                    )
+                    with urllib.request.urlopen(req, timeout=8) as response:
+                        cache = json.loads(response.read().decode("utf-8"))
+                    break
+                except Exception:
+                    continue
+        if cache is None:
             return None, "Local Reddit cache file not found"
-        cache = json.loads(REDDIT_CACHE_PATH.read_text(encoding="utf-8"))
         records = cache.get("records", {}) if isinstance(cache, dict) else {}
         record = records.get(ticker.upper())
         if not isinstance(record, dict):
